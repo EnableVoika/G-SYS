@@ -11,6 +11,10 @@
     <packaging>jar</packaging>
     <artifactId>ruoyi-admin</artifactId>
 
+    <properties>
+        <JarFileName>gsys-admin</JarFileName>
+    </properties>
+
     <description>
         web服务入口
     </description>
@@ -92,7 +96,8 @@
                 <version>3.0.0</version>   
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <warName>${project.artifactId}</warName>
+<!--                    <warName>${project.artifactId}</warName>-->
+                    <warName>${JarFileName}</warName>
                 </configuration>   
             </plugin>   
             <!-- YUI Compressor (CSS/JS压缩) 
@@ -129,7 +134,8 @@
                 </configuration>
             </plugin> -->
         </plugins>
-        <finalName>${project.artifactId}</finalName>
+<!--        <finalName>${project.artifactId}</finalName>-->
+        <finalName>${JarFileName}</finalName>
     </build>
 
 </project>
