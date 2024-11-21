@@ -126,6 +126,49 @@ public class AjaxResult extends HashMap<String, Object>
     }
 
     /**
+     * 此处和 success 一模一样，只是我喜欢写 ok
+     * 返回成功消息
+     * @return 成功消息
+     */
+    public static AjaxResult ok()
+    {
+        return AjaxResult.success("操作成功");
+    }
+
+    /**
+     * 返回成功数据
+     *
+     * @return 成功消息
+     */
+    public static AjaxResult ok(Object data)
+    {
+        return AjaxResult.success("操作成功", data);
+    }
+
+    /**
+     * 返回成功消息
+     *
+     * @param msg 返回内容
+     * @return 成功消息
+     */
+    public static AjaxResult ok(String msg)
+    {
+        return AjaxResult.success(msg, null);
+    }
+
+    /**
+     * 返回成功消息
+     *
+     * @param msg 返回内容
+     * @param data 数据对象
+     * @return 成功消息
+     */
+    public static AjaxResult ok(String msg, Object data)
+    {
+        return new AjaxResult(Type.SUCCESS, msg, data);
+    }
+
+    /**
      * 返回警告消息
      *
      * @param msg 返回内容
@@ -177,6 +220,39 @@ public class AjaxResult extends HashMap<String, Object>
      * @return 警告消息
      */
     public static AjaxResult error(String msg, Object data)
+    {
+        return new AjaxResult(Type.ERROR, msg, data);
+    }
+
+    /**
+     * 此处只是我喜欢写 fail
+     * 返回错误消息
+     * @return
+     */
+    public static AjaxResult fail()
+    {
+        return AjaxResult.error("操作失败");
+    }
+
+    /**
+     * 返回错误消息
+     *
+     * @param msg 返回内容
+     * @return 警告消息
+     */
+    public static AjaxResult fail(String msg)
+    {
+        return AjaxResult.error(msg, null);
+    }
+
+    /**
+     * 返回错误消息
+     *
+     * @param msg 返回内容
+     * @param data 数据对象
+     * @return 警告消息
+     */
+    public static AjaxResult fail(String msg, Object data)
     {
         return new AjaxResult(Type.ERROR, msg, data);
     }
