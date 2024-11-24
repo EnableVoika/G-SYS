@@ -1,4 +1,4 @@
-package com.ruoyi.web.controller.domain;
+package com.ruoyi.web.controller.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 

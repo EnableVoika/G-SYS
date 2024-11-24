@@ -7,7 +7,7 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.WriteMockBO;
 import com.ruoyi.system.service.CommonFileServer;
 import com.ruoyi.web.controller.common.CommonController;
-import com.ruoyi.web.controller.domain.WriteMockDTO;
+import com.ruoyi.web.controller.domain.dto.WriteMockDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

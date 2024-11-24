@@ -9,7 +9,8 @@ ruoyi:
   # 实例演示开关
   demoEnabled: true
   # 文件路径 示例（ Windows配置 D:/data/tmp/RcvFile/gsys，Linux配置 /home/ruoyi/uploadPath）
-  profile: /home/iy/RcvPath/gsys
+#  profile: /home/iy/RcvPath/gsys
+  profile: /Users/gore/iy/RcvPath/gsys
   # 获取ip地址开关
   addressEnabled: false
 
