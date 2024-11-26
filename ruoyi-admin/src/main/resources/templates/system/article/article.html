@@ -22,7 +22,7 @@
       <span style="color:#000000;font-size:medium">%content%</span><br>
       <span style="color:#008000;font-size:medium">
                                         档号：<a href="javascript:void(0)" onclick="handleView('%tableId%', '%archiveNo%')">%archiveNo%</a>
-               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%docNo%
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者：%author%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来源：%source%
               </span>
     </p>
   </div>
@@ -55,8 +55,12 @@
               title : '档号'
           },
           {
-              field : 'docNo',
-              title : '文件编号'
+              field : 'author',
+              title : '作者'
+          },
+          {
+              field : 'source',
+              title : '来源'
           },
           {
               field : 'title',
@@ -84,8 +88,9 @@
               view += template.replace('%tableId%', row.tableId)
               .replaceAll('%archiveNo%', row.archiveNo)
               .replace('%title%', row.title)
-              .replace('%docNo%', row.docNo)
+              .replace('%author%', row.author)
               .replace('%content%', truncateString(row.content, 500))
+              .replace('%source%', row.source)
           })
           return `<div class="row mx-0">${view}</div>`;
       } else {

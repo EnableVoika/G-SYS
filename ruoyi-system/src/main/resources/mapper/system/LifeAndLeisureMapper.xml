@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LifeAndLeisureMapper">
+
+    <resultMap type="Article" id="ArticleResult">
+        <id     property="tableId"      column="table_id"      />
+        <result property="archiveNo"    column="archive_no"    />
+        <result property="author"     column="author"     />
+        <result property="title"   column="title"   />
+        <result property="content"    column="content"    />
+        <result property="tags"    column="tags"    />
+        <result property="source"    column="source"    />
+        <result property="del"    column="del"    />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectArticleVo">
+        select table_id, archive_no, author, title, content,tags,source,del, create_time, update_by, update_time, remark
+        from article
+    </sql>
+
+    <select id="search" resultMap="ArticleResult">
+        <include refid="selectArticleVo" />
+        <where>
+            del = 0
+        </where>
+    </select>
+
+
+</mapper>
