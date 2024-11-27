@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -10,10 +11,8 @@ import com.ruoyi.system.service.LifeAndLeisureServices;
 import com.ruoyi.web.controller.domain.vo.DocumentModelVO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class ArticleController {
     /**
      * 查询全文索引数据
      */
-    @PostMapping("/article/list")
+    @PostMapping("/list")
     @ResponseBody
     public TableDataInfo textList(BaseEntity baseEntity)
     {
@@ -90,6 +89,14 @@ public class ArticleController {
         rspData.setRows(documentList.subList(pageNum, pageSize));
         rspData.setTotal(documentList.size());
         return rspData;
+    }
+
+    @GetMapping("/detail/{id}")
+    public String detail(@PathVariable("id") String _Id, ModelMap mmap)
+    {
+        mmap.put("content","龙帝后穴向外暴露着");
+        mmap.put("title","龙帝的沦陷");
+        return prefix + "/detail";
     }
 
 }

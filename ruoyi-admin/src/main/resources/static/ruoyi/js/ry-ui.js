@@ -1090,6 +1090,10 @@ var table = {
                 table.set();
                 $.modal.openTab("详细" + table.options.modalName, $.operate.detailUrl(id));
             },
+            detail_tab: function(_Id) {
+                table.set();
+                $.modal.openTab(table.options.tabTitle, $.operate.detailUrl(_Id));
+            },
             // 详细访问地址
             detailUrl: function(id) {
                 var url = "/404.html";
