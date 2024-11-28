@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.system.domain.Article;
 import com.ruoyi.system.mapper.LifeAndLeisureMapper;
 import com.ruoyi.system.service.LifeAndLeisureServices;
@@ -16,7 +17,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     private LifeAndLeisureMapper dao;
 
     /**
-     * 查询文章
+     * 查询文章列表
      * @return
      */
     @Override
@@ -27,5 +28,14 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             return null;
         }
         return pos;
+    }
+
+    /**
+     * 查询文章详情
+     */
+    @Override
+    public Article find(String _Id)
+    {
+        return dao.find(_Id);
     }
 }

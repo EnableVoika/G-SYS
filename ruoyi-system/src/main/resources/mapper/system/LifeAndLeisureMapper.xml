@@ -31,5 +31,13 @@
         </where>
     </select>
 
+    <select id="find" resultMap="ArticleResult" parameterType="String">
+        <include refid="selectArticleVo" />
+        <where>
+            del = 0
+            and table_id = #{id}
+        </where>
+    </select>
+
 
 </mapper>

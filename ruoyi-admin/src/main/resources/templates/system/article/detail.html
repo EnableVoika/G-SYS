@@ -3,15 +3,55 @@
 <head>
 	<th:block th:include="include :: header('操作日志详细')" />
 	<th:block th:include="include :: jsonview-css" />
+    <style>
+        .article-title
+        {
+            text-align: center;
+            font-weight: bolder;
+        }
+        .article-content
+        {
+            font-size: 18px;
+            white-space: pre-wrap;
+        }
+        .article-author
+        {
+            text-align: center;
+            font-size: 16px;
+        }
+        .article-source
+        {
+            text-align: right;
+        }
+    </style>
 </head>
 <body class="white-bg">
 	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
-		哦耶～
+        <div>
+            <h1 id="title" class="article-title"></h1>
+        </div>
+        <div class="article-author">
+            作者：<span id="author"></span>
+        </div>
+        <br />
+        <div id="content" class="article-content"></div>
+        <br />
+        <br />
+        <br />
+        <br />
+        <div class="article-source">
+            文章来源：<span id="source"></span>
+        </div>
+        <br />
     </div>
     <th:block th:include="include :: footer" />
     <th:block th:include="include :: jsonview-js" />
     <script th:inline="javascript">
 	    $(function() {
+            $("#title").html([[${title}]]);
+            $("#author").html([[${author}]]);
+            $("#content").html([[${content}]]);
+            $("#source").html([[${source}]]);
 	    });
     </script>
 </body>

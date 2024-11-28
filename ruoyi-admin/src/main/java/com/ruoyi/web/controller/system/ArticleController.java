@@ -5,6 +5,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.page.TableSupport;
+import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Article;
 import com.ruoyi.system.service.LifeAndLeisureServices;
@@ -94,8 +95,23 @@ public class ArticleController {
     @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") String _Id, ModelMap mmap)
     {
-        mmap.put("content","龙帝后穴向外暴露着");
-        mmap.put("title","龙帝的沦陷");
+        if (StringUtils.isEmpty(_Id))
+        {
+            throw new ServiceExcept("文章id不能为空");
+        }
+        Article data = services.find(_Id);
+        if (null == data)
+        {
+            throw new ServiceExcept("文章不存在");
+        }
+//        mmap.put("content","    龙帝的<b>后穴向外暴露</b>着,鸡巴一下一下在众人面前跳动，玲口有溢出的乳白色精液。龙帝的鸡巴渴望着发泄、渴望着射精，但可惜的是没有儿子的允许，龙帝一滴精液也射不出来。作为一个父亲，却被自己的儿子管控自己射精，龙帝心里十分羞耻，可在欲望面前，龙帝鸡巴已经一个月的悬停在射精的边缘，两颗龙蛋饱满得快要炸了一般难受，终于，龙帝还是红着脸看着儿子、看着龙椅下来自各个国家的代表兽们，极度羞耻说了出来。\n    \"求...求求儿子，让我射出来\"。龙帝淫荡地哀求着。");
+//        mmap.put("title","龙帝的沦陷");
+        mmap.put("title",data.getTitle());
+        mmap.put("content",data.getContent());
+        mmap.put("author",data.getAuthor());
+        mmap.put("source",data.getSource());
+        mmap.put("archiveNo",data.getArchiveNo());
+        mmap.put("tags",data.getTags());
         return prefix + "/detail";
     }
 

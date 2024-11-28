@@ -1,126 +1,133 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
-  <th:block th:include="include :: header('全文搜索')" />
+    <th:block th:include="include :: header('全文搜索')" />
+    <style>
+        .article-title
+        {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="gray-bg">
 <div class="container-div">
-  <div class="row">
-    <div class="col-sm-12 select-table table-striped">
-      <table id="bootstrap-table" data-page-size="10" data-search-align="left"
-             data-show-custom-view="true" data-custom-view="customViewFormatter"
-             data-custom-view-default-view="true">
-      </table>
+    <div class="row">
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table" data-page-size="10" data-search-align="left"
+                   data-show-custom-view="true" data-custom-view="customViewFormatter"
+                   data-custom-view-default-view="true">
+            </table>
+        </div>
     </div>
-  </div>
 </div>
 
 <template id="textSearchTemplate">
-  <div class="col-sm-12">
-    <p style="margin-top:10px;line-height:1.5;">
-      <span style="color:blue;font-size:medium">%title%</span><br>
-      <span style="color:#000000;font-size:medium"><a onclick="detailClick(this)" title-name="%title-name%">%content%</a></span><br>
-      <span style="color:#008000;font-size:medium">
+    <div class="col-sm-12">
+        <p style="margin-top:10px;line-height:1.5;">
+        <div id="articleTitle" onclick="detailClick(this)" title-name="%title-name%" article-id="%tableId%">
+            <span style="color:blue;font-size:medium;font-size: 18px;" class="article-title">%title%</span><br>
+        </div>
+        <span style="color:#000000;font-size:medium">%content%</span><br>
+        <span style="color:#008000;font-size:medium">
                                         档号：<a href="javascript:void(0)" onclick="handleView('%tableId%', '%archiveNo%')">%archiveNo%</a>
                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者：%author%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来源：%source%
               </span>
-    </p>
-  </div>
+        </p>
+    </div>
 </template>
 
 <div th:include="include :: footer"></div>
 <th:block th:include="include :: bootstrap-table-custom-view-js" />
 <script th:inline="javascript">
-  var prefix = ctx + "system/article";
+    var prefix = ctx + "system/article";
 
-  $(function() {
-      var options = {
-          tabTitle: '',
-          url: prefix + "/list",
-          detailUrl: prefix + "/detail/{id}",
-          search: true,
-          showSearch: false,
-          showRefresh: false,
-          showToggle: false,
-          showColumns: false,
-          showExport: true,
-          columns: [{
-              checkbox: true
-          },
-          {
-              field : 'tableId',
-              title : '编号',
-              visible: false
-          },
-          {
-              field : 'archiveNo',
-              title : '档号'
-          },
-          {
-              field : 'author',
-              title : '作者'
-          },
-          {
-              field : 'source',
-              title : '来源'
-          },
-          {
-              field : 'title',
-              title : '标题',
-              formatter: function(value, row, index) {
-                  return $.table.tooltip(value, 20, "open");
-              }
-          },
-          {
-              field : 'content',
-              title : '内容',
-              formatter: function(value, row, index) {
-                  return $.table.tooltip(value, 30, "open");
-              }
-          }]
-      };
-      $.table.init(options);
-  });
+    $(function() {
+        var options = {
+            tabTitle: '',
+            url: prefix + "/list",
+            detailUrl: prefix + "/detail/{id}",
+            search: true,
+            showSearch: false,
+            showRefresh: false,
+            showToggle: false,
+            showColumns: false,
+            showExport: true,
+            columns: [{
+                checkbox: true
+            },
+            {
+                field : 'tableId',
+                title : '编号',
+                visible: false
+            },
+            {
+                field : 'archiveNo',
+                title : '档号'
+            },
+            {
+                field : 'author',
+                title : '作者'
+            },
+            {
+                field : 'source',
+                title : '来源'
+            },
+            {
+                field : 'title',
+                title : '标题',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 20, "open");
+                }
+            },
+            {
+                field : 'content',
+                title : '内容',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 30, "open");
+                }
+            }]
+        };
+        $.table.init(options);
+    });
 
-  function customViewFormatter (data) {
-      var template = $('#textSearchTemplate').html()
-      var view = ''
-      if(data.length > 0) {
-          $.each(data, function (i, row) {
-              view += template.replace('%tableId%', row.tableId)
-              .replaceAll('%archiveNo%', row.archiveNo)
-              .replace('%title%', row.title)
-              .replace('%title-name%', row.title)
-              .replace('%author%', row.author)
-              .replace('%content%', truncateString(row.content, 500))
-              .replace('%source%', row.source)
-          })
-          return `<div class="row mx-0">${view}</div>`;
-      } else {
-          return `<div class="row mx-0"><div class="col-sm-12"><p style="margin-top:10px;line-height:1.5;"><span style="font-size:medium">没有找到记录。请检查过滤条件。</span></p></div></div>`
+    function customViewFormatter (data) {
+        var template = $('#textSearchTemplate').html()
+        var view = ''
+        if(data.length > 0) {
+            $.each(data, function (i, row) {
+                view += template.replace('%tableId%', row.tableId)
+                .replaceAll('%archiveNo%', row.archiveNo)
+                .replace('%title%', row.title)
+                .replace('%title-name%', row.title)
+                .replace('%author%', row.author)
+                .replace('%content%', truncateString(row.content, 500))
+                .replace('%source%', row.source)
+            })
+            return `<div class="row mx-0">${view}</div>`;
+        } else {
+            return `<div class="row mx-0"><div class="col-sm-12"><p style="margin-top:10px;line-height:1.5;"><span style="font-size:medium">没有找到记录。请检查过滤条件。</span></p></div></div>`
+        }
       }
+
+    function handleView(tableId, archiveNo) {
+        alert("tableId：" + tableId + "，archiveNo：" + archiveNo);
     }
 
-  function handleView(tableId, archiveNo) {
-      alert("tableId：" + tableId + "，archiveNo：" + archiveNo);
-  }
+    function truncateString(str, maxLength) {
+           if (str.length > maxLength) {
+               return str.slice(0, maxLength) + '...';
+           }
+           return str;
+       }
+    function detailClick(data)
+    {
+      table.options.tabTitle = data.getAttribute('title-name');
+      $.operate.detail_tab(data.getAttribute('article-id'));
+    }
 
-  function truncateString(str, maxLength) {
-         if (str.length > maxLength) {
-             return str.slice(0, maxLength) + '...';
-         }
-         return str;
-     }
-  function detailClick(data)
-  {
-    // console.log(data);
-    table.options.tabTitle = data.getAttribute('title-name');
-    $.operate.detail_tab(111);
-  }
-
-  $(document).ready(function() {
-      $('.search-input').css('width', '320px');
-  });
+    $(document).ready(function() {
+        $('.search-input').css('width', '320px');
+    });
 </script>
 </body>
 </html>
