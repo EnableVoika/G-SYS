@@ -15,6 +15,15 @@ public interface LifeAndLeisureServices {
     /**
      * 查询文章详情
      */
-    Article find(String _Id);
+    Article find_article(String _Id);
+
+    /**
+     * 查询我的收藏文章
+     * @param _UserId
+     * @return
+     */
+    List<Article> find_favorite(long _UserId);
+
+    int add_article(Article dto);
 
 }

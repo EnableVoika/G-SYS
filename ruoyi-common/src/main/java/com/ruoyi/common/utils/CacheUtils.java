@@ -75,9 +75,9 @@ public class CacheUtils
      * @param key
      * @return
      */
-    public static Object get(String cacheName, String key)
+    public static <T> T get(String cacheName, String key)
     {
-        return getCache(cacheName).get(getKey(key));
+        return (T)getCache(cacheName).get(getKey(key));
     }
 
     /**
@@ -101,7 +101,7 @@ public class CacheUtils
      * @param key
      * @param value
      */
-    public static void put(String cacheName, String key, Object value)
+    public static <T> void put(String cacheName, String key, T value)
     {
         getCache(cacheName).put(getKey(key), value);
     }

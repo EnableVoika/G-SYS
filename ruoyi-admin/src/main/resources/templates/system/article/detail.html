@@ -23,6 +23,11 @@
         {
             text-align: right;
         }
+        .article-tags
+        {
+            text-align: center;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body class="white-bg">
@@ -32,6 +37,10 @@
         </div>
         <div class="article-author">
             作者：<span id="author"></span>
+        </div>
+        <br />
+        <div class="article-tags">
+            标签：<span id="tags"></span>
         </div>
         <br />
         <div id="content" class="article-content"></div>
@@ -52,6 +61,7 @@
             $("#author").html([[${author}]]);
             $("#content").html([[${content}]]);
             $("#source").html([[${source}]]);
+            $("#tags").html([[${tags}]]);
 	    });
     </script>
 </body>

@@ -38,6 +38,9 @@ public class BaseEntity implements Serializable
     /** 备注 */
     private String remark;
 
+    /** 版本号 */
+    private Long version;
+
     /** 请求参数 */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<String, Object> params;
@@ -114,5 +117,13 @@ public class BaseEntity implements Serializable
     public void setParams(Map<String, Object> params)
     {
         this.params = params;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

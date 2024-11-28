@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.LifeAndLeisureMapper">
 
-    <resultMap type="Article" id="ArticleResult">
+    <resultMap type="com.ruoyi.system.domain.Article" id="ArticleResult">
         <id     property="tableId"      column="table_id"      />
         <result property="archiveNo"    column="archive_no"    />
         <result property="author"     column="author"     />
@@ -31,13 +31,86 @@
         </where>
     </select>
 
-    <select id="find" resultMap="ArticleResult" parameterType="String">
+    <select id="search_batch" resultMap="ArticleResult">
+        <include refid="selectArticleVo" />
+        <where>
+            del = 0
+            <if test="null != _ArticleIds and 0 != _ArticleIds.size()">
+                and table_id in
+                <foreach collection="_ArticleIds" open="(" separator="," item="x" close=")">
+                    #{x}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="find_article" resultMap="ArticleResult" parameterType="String">
         <include refid="selectArticleVo" />
         <where>
             del = 0
             and table_id = #{id}
         </where>
     </select>
+
+    <!-- 添加文章 -->
+    <insert id="add_article" parameterType="com.ruoyi.system.domain.Article">
+        insert into article(table_id
+        <if test="null != archiveNo">
+            ,archive_no
+        </if>
+        <if test="null != author">
+            ,author
+        </if>
+        <if test="null != title">
+            ,title
+        </if>
+        <if test="null != content">
+            ,content
+        </if>
+        <if test="null != tags">
+            ,tags
+        </if>
+        <if test="null != source">
+            ,source
+        </if>
+        ,del
+        ,create_by
+        ,create_time
+        <if test="null != remark">
+            ,remark
+        </if>
+        ,version
+        )
+        values
+        (
+            #{tableId}
+        <if test="null != archiveNo">
+            ,#{archiveNo}
+        </if>
+        <if test="null != author">
+            ,#{author}
+        </if>
+        <if test="null != title">
+            ,#{title}
+        </if>
+        <if test="null != content">
+            ,#{content}
+        </if>
+        <if test="null != tags">
+            ,#{tags}
+        </if>
+        <if test="null != source">
+            ,#{source}
+        </if>
+        ,0
+        ,#{createBy}
+        ,now()
+        <if test="null != remark">
+            ,#{remark}
+        </if>
+        ,0
+        )
+    </insert>
 
 
 </mapper>

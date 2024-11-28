@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.FavoriteArticleMapper">
+
+    <resultMap type="FavoriteArticle" id="FavoriteArticleResult">
+        <id     property="userId"      column="user_id"      />
+        <result property="articleId"    column="article_id"    />
+    </resultMap>
+
+    <sql id="selectArticleFavoriteVo">
+        select user_id, article_id
+        from favorite_article
+    </sql>
+
+    <select id="find" resultMap="FavoriteArticleResult" parameterType="long">
+        <include refid="selectArticleFavoriteVo" />
+        <where>
+            user_id = #{userId}
+        </where>
+    </select>
+
+
+</mapper>

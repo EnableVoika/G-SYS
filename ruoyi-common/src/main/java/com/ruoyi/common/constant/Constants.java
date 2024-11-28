@@ -119,4 +119,11 @@ public class Constants
      */
     public static final String[] JOB_ERROR_STR = { "java.net.URL", "javax.naming.InitialContext", "org.yaml.snakeyaml",
             "org.springframework", "org.apache", "com.ruoyi.common.utils.file", "com.ruoyi.common.config", "com.ruoyi.generator" };
+
+    /**
+     * 默认的缓存名字
+     */
+    public static final String DEFAULT_CACHE_NAME = "default_cache";
+
+    public static final String ARTICLE_CACHE_NAME = "article_cache";
 }

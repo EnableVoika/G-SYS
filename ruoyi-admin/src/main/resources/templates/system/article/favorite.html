@@ -24,9 +24,8 @@
 <template id="textSearchTemplate">
     <div class="col-sm-12">
         <p style="margin-top:10px;line-height:1.5;">
-        <div id="articleTitle" >
-        <a onclick="detailClick(this)" title-name="%title-name%" article-id="%tableId%"><span style="color:blue;font-size:medium;font-size: 18px;">%title%</span></a>
-            <br>
+        <div id="articleTitle" onclick="detailClick(this)" title-name="%title-name%" article-id="%tableId%">
+            <span style="color:blue;font-size:medium;font-size: 18px;" class="article-title">%title%</span><br>
         </div>
         <span style="color:#000000;font-size:medium">%content%</span><br>
         <span style="color:#008000;font-size:medium">
@@ -45,7 +44,7 @@
     $(function() {
         var options = {
             tabTitle: '',
-            url: prefix + "/list",
+            url: prefix + "/favorite/list",
             detailUrl: prefix + "/detail/{id}",
             search: true,
             showSearch: false,
@@ -53,6 +52,7 @@
             showToggle: false,
             showColumns: false,
             showExport: true,
+            method: "GET",
             columns: [{
                 checkbox: true
             },
@@ -103,7 +103,7 @@
         var view = ''
         if(data.length > 0) {
             $.each(data, function (i, row) {
-                view += template.replaceAll('%tableId%', row.tableId)
+                view += template.replace('%tableId%', row.tableId)
                 .replaceAll('%archiveNo%', row.archiveNo)
                 .replace('%title%', row.title)
                 .replace('%title-name%', row.title)
