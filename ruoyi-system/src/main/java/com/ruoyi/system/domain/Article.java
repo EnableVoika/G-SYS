@@ -28,6 +28,9 @@ public class Article extends BaseEntity {
     /** 1=删除，0=未删除 */
     private int del;
 
+    /** 文章状态 1=关闭，0=正常 */
+    private Integer status;
+
     public Article()
     {
 
@@ -112,5 +115,13 @@ public class Article extends BaseEntity {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }

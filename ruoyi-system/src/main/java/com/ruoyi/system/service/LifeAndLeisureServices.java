@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.ruoyi.system.domain.Article;
+import org.springframework.ui.ModelMap;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public interface LifeAndLeisureServices {
      * 查询文章列表
      * @return
      */
-    List<Article> search();
+    List<Article> search(Article condition);
 
     /**
      * 查询文章详情
@@ -25,5 +26,7 @@ public interface LifeAndLeisureServices {
     List<Article> find_favorite(long _UserId);
 
     int add_article(Article dto);
+
+    int edit_article(Article dto);
 
 }

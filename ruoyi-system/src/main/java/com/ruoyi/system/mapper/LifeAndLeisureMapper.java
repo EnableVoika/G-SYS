@@ -20,12 +20,14 @@ public interface LifeAndLeisureMapper {
 
     Article find_article(String id);
 
-    List<Article> search();
+    List<Article> search(Article condition);
 
     /**
      * 批量查询文章列表
      * @return
      */
     List<Article> search_batch(@Param("_ArticleIds") List<String> _ArticleIds);
+
+    Long get_version(@Param("id")String _Id);
 
 }

@@ -2,7 +2,6 @@ package com.ruoyi.web.controller.system;
 
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceExcept;
@@ -41,10 +40,10 @@ public class ArticleController extends BaseController {
      */
     @PostMapping("/list")
     @ResponseBody
-    public TableDataInfo textList(BaseEntity baseEntity)
+    public TableDataInfo textList(Article condition)
     {
         startPage();
-        List<Article> documentList = services.search();
+        List<Article> documentList = services.search(condition);
         return getDataTable(documentList);
     }
 
@@ -87,13 +86,13 @@ public class ArticleController extends BaseController {
         return getDataTable(data);
     }
 
+    @RequiresPermissions("system:article:add")
     @GetMapping("/add")
     public String add()
     {
         return prefix + "/add";
     }
 
-    @RequiresPermissions("system:article:add")
     @PostMapping("/add")
     @ResponseBody
     public AjaxResult add_article(Article dto)
@@ -104,6 +103,51 @@ public class ArticleController extends BaseController {
             return AjaxResult.ok("发布成功");
         }
         return AjaxResult.fail("发布失败,请稍后重试");
+    }
+
+    @RequiresPermissions("system:article:view")
+    @GetMapping("/my_publish")
+    public String my_publish()
+    {
+        return prefix + "/my_publish";
+    }
+
+    @GetMapping("/my_publish/list")
+    @ResponseBody
+    public TableDataInfo my_publish_list()
+    {
+        startPage();
+        Article condition = new Article();
+        condition.setCreateBy(String.valueOf(getUserId()));
+        List<Article> data = services.search(condition);
+        return getDataTable(data);
+    }
+
+    @RequiresPermissions("system:article:edit")
+    @GetMapping("/edit/{id}")
+    public String edit(@PathVariable("id")String _Id,ModelMap mmap)
+    {
+        if (StringUtils.isEmpty(_Id))
+        {
+            throw new ServiceExcept("文章id不能为空");
+        }
+        Article data = services.find_article(_Id);
+        if (null == data)
+        {
+            throw new ServiceExcept("文章不存在");
+        }
+        mmap.put("article",data);
+        return prefix + "/edit";
+    }
+
+    @PostMapping("/edit")
+    @ResponseBody
+    public AjaxResult edit_post(Article dto)
+    {
+        dto.setUpdateBy(String.valueOf(getUserId()));
+        if (1 == services.edit_article(dto))
+            return AjaxResult.ok("修改成功");
+        return AjaxResult.ok("修改失败");
     }
 
 }

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('全文搜索')" />
+    <style>
+        .article-title
+        {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table" data-page-size="10" data-search-align="left"
+                   data-show-custom-view="true" data-custom-view="customViewFormatter"
+                   data-custom-view-default-view="true">
+            </table>
+        </div>
+    </div>
+</div>
+
+<template id="textSearchTemplate">
+    <div class="col-sm-12">
+        <p style="margin-top:10px;line-height:1.5;">
+        <div id="articleTitle" onclick="detailClick(this)" title-name="%title-name%" article-id="%tableId%">
+            <span style="color:blue;font-size:medium;font-size: 18px;" class="article-title">%title%</span><br>
+        </div>
+        <span style="color:#000000;font-size:medium">%content%</span><br>
+        <span style="color:#008000;font-size:medium">
+                                        档号：<a href="javascript:void(0)" onclick="handleView('%tableId%', '%archiveNo%')">%archiveNo%</a>
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者：%author%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来源：%source%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;标签：%tags%
+              </span>
+        </p>
+    </div>
+</template>
+
+<div th:include="include :: footer"></div>
+<th:block th:include="include :: bootstrap-table-custom-view-js" />
+<script th:inline="javascript">
+    var editFlag = [[${@permission.hasPermi('system:article:edit')}]];
+    var removeFlag = [[${@permission.hasPermi('system:article:remove')}]];
+    var prefix = ctx + "system/article";
+
+    $(function() {
+        var options = {
+            tabTitle: '',
+            url: prefix + "/my_publish/list",
+            detailUrl: prefix + "/detail/{id}",
+            updateUrl: prefix + "/edit/{id}",
+            search: true,
+            showSearch: false,
+            showRefresh: false,
+            showToggle: false,
+            showColumns: false,
+            showExport: true,
+            method: "GET",
+            modalName: '',
+            columns: [{
+                checkbox: true
+            },
+            {
+                field : 'tableId',
+                title : '编号',
+                visible: false
+            },
+            {
+                field : 'archiveNo',
+                title : '档号'
+            },
+            {
+                field : 'author',
+                title : '作者'
+            },
+            {
+                field : 'tags',
+                title : '标签',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 20, "open");
+                }
+            },
+            {
+                field : 'source',
+                title : '来源'
+            },
+            {
+                field : 'title',
+                title : '标题',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 20, "open");
+                }
+            },
+            {
+                field : 'content',
+                title : '内容',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 30, "open");
+                }
+            },
+            {
+                title: '操作',
+                align: 'center',
+                formatter: function(value, row, index)
+                {
+                    var actions = [];
+                    actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit_tab(\'' + row.tableId + '\',\'' + row.title + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                    actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.tableId + '\')"><i class="fa fa-remove"></i>删除</a> ');
+                    return actions.join('');
+                }
+            }
+            ]
+        };
+        $.table.init(options);
+    });
+
+    function customViewFormatter (data) {
+        var template = $('#textSearchTemplate').html()
+        var view = ''
+        if(data.length > 0) {
+            $.each(data, function (i, row) {
+                view += template.replace('%tableId%', row.tableId)
+                .replaceAll('%archiveNo%', row.archiveNo)
+                .replace('%title%', row.title)
+                .replace('%title-name%', row.title)
+                .replace('%author%', row.author)
+                .replace('%content%', truncateString(row.content, 500))
+                .replace('%source%', row.source)
+                .replace('%tags%',row.tags)
+            })
+            return `<div class="row mx-0">${view}</div>`;
+        } else {
+            return `<div class="row mx-0"><div class="col-sm-12"><p style="margin-top:10px;line-height:1.5;"><span style="font-size:medium">没有找到记录。请检查过滤条件。</span></p></div></div>`
+        }
+      }
+
+    function handleView(tableId, archiveNo) {
+        alert("tableId：" + tableId + "，archiveNo：" + archiveNo);
+    }
+
+    function truncateString(str, maxLength) {
+           if (str.length > maxLength) {
+               return str.slice(0, maxLength) + '...';
+           }
+           return str;
+       }
+    function detailClick(data)
+    {
+      table.options.tabTitle = data.getAttribute('title-name');
+      $.operate.detail_tab(data.getAttribute('article-id'));
+    }
+
+    $(document).ready(function() {
+        $('.search-input').css('width', '320px');
+    });
+</script>
+</body>
+</html>

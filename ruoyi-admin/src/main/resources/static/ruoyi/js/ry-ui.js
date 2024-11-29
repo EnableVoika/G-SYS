@@ -1184,6 +1184,11 @@ var table = {
                 table.set();
                 $.modal.openTab("修改" + table.options.modalName, $.operate.editUrl(id));
             },
+            edit_tab: function(id,_ModalName)
+            {
+                table.set();
+                $.modal.openTab("修改" + _ModalName, $.operate.editUrl(id));
+            },
             // 修改信息 全屏
             editFull: function(id) {
                 table.set();

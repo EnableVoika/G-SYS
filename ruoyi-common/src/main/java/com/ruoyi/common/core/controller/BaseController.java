@@ -1,11 +1,14 @@
 package com.ruoyi.common.core.controller;
 
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.WebDataBinder;
@@ -110,6 +113,7 @@ public class BaseController
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected TableDataInfo getDataTable(List<?> list)
     {
+        list = CollectionUtils.isEmpty(list) ? new ArrayList<>() : list;
         TableDataInfo rspData = new TableDataInfo();
         rspData.setCode(0);
         rspData.setRows(list);

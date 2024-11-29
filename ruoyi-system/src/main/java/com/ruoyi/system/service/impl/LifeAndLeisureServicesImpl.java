@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import com.ruoyi.common.constant.Constants;
+import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.CacheUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.system.domain.Article;
@@ -24,9 +25,14 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     @Resource
     private FavoriteArticleMapper fam;
 
-    private void add_cache(Article _Article)
+    private static void add_cache(Article _Article)
     {
         CacheUtils.put(Constants.ARTICLE_CACHE_NAME,_Article.getTableId(),_Article);
+    }
+
+    private static Article get_cache(String _Id)
+    {
+        return CacheUtils.get(Constants.ARTICLE_CACHE_NAME,_Id);
     }
 
     /**
@@ -34,12 +40,8 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
      * @return
      */
     @Override
-    public List<Article> search() {
-        List<Article> pos = dao.search();
-        if (CollectionUtils.isEmpty(pos))
-        {
-            return null;
-        }
+    public List<Article> search(Article condition) {
+        List<Article> pos = dao.search(condition);
         return pos;
     }
 
@@ -49,7 +51,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     @Override
     public Article find_article(String _Id)
     {
-        Article po = CacheUtils.get(Constants.ARTICLE_CACHE_NAME,_Id);
+        Article po = get_cache(_Id);
         if (null != po)
             return po;
         po = dao.find_article(_Id);
@@ -82,8 +84,20 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     public int add_article(Article dto) {
         dto.setTableId(IdUtils.fastSimpleUUID());
         int res = dao.add_article(dto);
-        if (1 == res)
-            add_cache(dto);
+        add_cache(find_article(dto.getTableId()));
+        return res;
+    }
+
+    @Override
+    public int edit_article(Article dto) {
+        Long currentVersion =  dao.get_version(dto.getTableId());
+        if (null == currentVersion)
+            throw new ServiceExcept("文章不存在");
+        ++currentVersion;
+        // 虽然编译器能处理自加传参的先后顺序，但我还是不喜欢这么写
+        dto.setVersion(currentVersion);
+        int res = dao.edit_article(dto);
+        add_cache(dao.find_article(dto.getTableId()));
         return res;
     }
 

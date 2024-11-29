@@ -12,6 +12,7 @@
         <result property="content"    column="content"    />
         <result property="tags"    column="tags"    />
         <result property="source"    column="source"    />
+        <result property="status"    column="status"    />
         <result property="del"    column="del"    />
         <result property="createBy"      column="create_by"      />
         <result property="createTime"    column="create_time"    />
@@ -20,14 +21,17 @@
     </resultMap>
 
     <sql id="selectArticleVo">
-        select table_id, archive_no, author, title, content,tags,source,del, create_time, update_by, update_time, remark
+        select table_id, archive_no, author, title, content,tags,source,del,status, create_time, update_by, update_time, remark
         from article
     </sql>
 
-    <select id="search" resultMap="ArticleResult">
+    <select id="search" resultMap="ArticleResult" parameterType="com.ruoyi.system.domain.Article">
         <include refid="selectArticleVo" />
         <where>
             del = 0
+            <if test="null != createBy and '' != createBy">
+                and create_by = #{createBy}
+            </if>
         </where>
     </select>
 
@@ -74,6 +78,9 @@
             ,source
         </if>
         ,del
+        <if test="null != status">
+            ,status
+        </if>
         ,create_by
         ,create_time
         <if test="null != remark">
@@ -103,6 +110,9 @@
             ,#{source}
         </if>
         ,0
+        <if test="null != status">
+            ,#{status}
+        </if>
         ,#{createBy}
         ,now()
         <if test="null != remark">
@@ -111,6 +121,42 @@
         ,0
         )
     </insert>
+
+    <update id="edit_article" parameterType="com.ruoyi.system.domain.Article">
+        update article set
+        update_time = now(),
+        update_by = #{updateBy},
+        version = #{version}
+        <if test="null != archiveNo">
+            ,archive_no = #{archiveNo}
+        </if>
+        <if test="null != author">
+            ,author = #{author}
+        </if>
+        <if test="null != title">
+            ,title = #{title}
+        </if>
+        <if test="null != content">
+            ,content = #{content}
+        </if>
+        <if test="null != tags">
+            ,tags = #{tags}
+        </if>
+        <if test="null != source">
+            ,source = #{source}
+        </if>
+        <if test="null != status">
+            ,status = #{status}
+        </if>
+        <if test="null != remark">
+            ,remark = #{remark}
+        </if>
+        where del = 0 and table_id = #{tableId}
+    </update>
+
+    <select id="get_version" resultType="long" parameterType="String">
+        select version from article where del = 0 and table_id = #{id};
+    </select>
 
 
 </mapper>
