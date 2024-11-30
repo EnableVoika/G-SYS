@@ -16,7 +16,7 @@
 <body class="gray-bg">
 <div class="container-div">
     <div class="row">
-        <div class="btn-group-sm" id="toolbar" role="group">
+        <div class="btn-group-sm toolbar-disable" id="toolbar" role="group">
             <a class="btn btn-success" onclick="$.operate.addTab()" shiro:hasPermission="system:article:add">
                 <i class="fa fa-plus"></i> 新 增
             </a>
@@ -166,7 +166,6 @@
     }
 
     let openFlag = false;
-    $("#toolbar").addClass("toolbar-disable");
     $("#bootstrap-table").bind('toggle-custom-view.bs.table',function()
     {
         openFlag = !openFlag;
