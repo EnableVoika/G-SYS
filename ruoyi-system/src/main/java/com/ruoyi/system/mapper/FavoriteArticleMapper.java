@@ -9,4 +9,6 @@ public interface FavoriteArticleMapper {
 
     List<FavoriteArticle> find(@Param("userId") long _UserId);
 
+    int insert_batch(@Param("list") List<FavoriteArticle> list);
+
 }

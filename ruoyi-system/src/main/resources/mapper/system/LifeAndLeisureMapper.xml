@@ -21,7 +21,7 @@
     </resultMap>
 
     <sql id="selectArticleVo">
-        select table_id, archive_no, author, title, content,tags,source,del,status, create_time, update_by, update_time, remark
+        select table_id, archive_no, author, title, content,tags,source,del,status, create_time, update_by, update_time, remark, version
         from article
     </sql>
 
@@ -157,6 +157,17 @@
     <select id="get_version" resultType="long" parameterType="String">
         select version from article where del = 0 and table_id = #{id};
     </select>
+
+    <delete id="del_article" parameterType="String">
+        update article set del = 1 where table_id = #{id}
+    </delete>
+
+    <delete id="del_article_batch" parameterType="list">
+        update article set del = 1 where table_id in
+        <foreach collection="ids" open="(" separator="," item="id" close=")">
+            #{id}
+        </foreach>
+    </delete>
 
 
 </mapper>

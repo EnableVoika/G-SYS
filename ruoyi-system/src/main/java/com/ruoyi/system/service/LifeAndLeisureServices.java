@@ -29,4 +29,8 @@ public interface LifeAndLeisureServices {
 
     int edit_article(Article dto);
 
+    int del_article(String _Id);
+
+    int del_article_batch(List<String> _Ids);
+
 }

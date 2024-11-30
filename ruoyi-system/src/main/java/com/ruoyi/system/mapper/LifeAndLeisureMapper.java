@@ -16,7 +16,9 @@ public interface LifeAndLeisureMapper {
 
     int edit_article(Article po);
 
-    int del_article(String id);
+    int del_article(@Param("id") String _Id);
+
+    int del_article_batch(@Param("ids") List<String> _Ids);
 
     Article find_article(String id);
 

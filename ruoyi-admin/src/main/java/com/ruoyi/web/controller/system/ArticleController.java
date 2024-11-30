@@ -4,6 +4,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Article;
@@ -14,6 +15,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -98,11 +100,7 @@ public class ArticleController extends BaseController {
     public AjaxResult add_article(Article dto)
     {
         dto.setCreateBy(String.valueOf(getUserId()));
-        if (1 == services.add_article(dto))
-        {
-            return AjaxResult.ok("发布成功");
-        }
-        return AjaxResult.fail("发布失败,请稍后重试");
+        return toAjax(services.add_article(dto));
     }
 
     @RequiresPermissions("system:article:view")
@@ -145,9 +143,16 @@ public class ArticleController extends BaseController {
     public AjaxResult edit_post(Article dto)
     {
         dto.setUpdateBy(String.valueOf(getUserId()));
-        if (1 == services.edit_article(dto))
-            return AjaxResult.ok("修改成功");
-        return AjaxResult.ok("修改失败");
+        return toAjax(services.edit_article(dto));
+    }
+
+    @PostMapping("/del")
+    @ResponseBody
+    public AjaxResult del(@RequestParam("ids") String _Ids)
+    {
+        if (StringUtils.isEmpty(_Ids))
+            return success();
+        return toAjax(services.del_article_batch(Arrays.asList(Convert.toStrArray(_Ids))));
     }
 
 }

@@ -7,20 +7,32 @@
         {
             cursor: pointer;
         }
+        .toolbar-disable
+        {
+            display: none
+        }
     </style>
 </head>
 <body class="gray-bg">
 <div class="container-div">
     <div class="row">
-        <div class="col-sm-12 select-table table-striped">
-            <table id="bootstrap-table" data-page-size="10" data-search-align="left"
+        <div class="btn-group-sm" id="toolbar" role="group">
+            <a class="btn btn-success" onclick="$.operate.addTab()" shiro:hasPermission="system:article:add">
+                <i class="fa fa-plus"></i> 新 增
+            </a>
+            &nbsp;
+            <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="system:article:remove">
+                <i class="fa fa-remove"></i> 删 除
+            </a>
+        </div>
+        <div class="col-sm-12 select-table table-striped" id="article-table">
+            <table id="bootstrap-table" data-page-size="10" data-search-align="right"
                    data-show-custom-view="true" data-custom-view="customViewFormatter"
                    data-custom-view-default-view="true">
             </table>
         </div>
     </div>
 </div>
-
 <template id="textSearchTemplate">
     <div class="col-sm-12">
         <p style="margin-top:10px;line-height:1.5;">
@@ -44,11 +56,14 @@
     var prefix = ctx + "system/article";
 
     $(function() {
+        openFlag = false;
         var options = {
             tabTitle: '',
             url: prefix + "/my_publish/list",
             detailUrl: prefix + "/detail/{id}",
             updateUrl: prefix + "/edit/{id}",
+            removeUrl: prefix + "/del",
+            createUrl: prefix + "/add",
             search: true,
             showSearch: false,
             showRefresh: false,
@@ -56,7 +71,7 @@
             showColumns: false,
             showExport: true,
             method: "GET",
-            modalName: '',
+            modalName: '文章',
             columns: [{
                 checkbox: true
             },
@@ -68,6 +83,13 @@
             {
                 field : 'archiveNo',
                 title : '档号'
+            },
+            {
+                field : 'title',
+                title : '标题',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip(value, 20, "open");
+                }
             },
             {
                 field : 'author',
@@ -85,13 +107,6 @@
                 title : '来源'
             },
             {
-                field : 'title',
-                title : '标题',
-                formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 20, "open");
-                }
-            },
-            {
                 field : 'content',
                 title : '内容',
                 formatter: function(value, row, index) {
@@ -104,8 +119,8 @@
                 formatter: function(value, row, index)
                 {
                     var actions = [];
-                    actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit_tab(\'' + row.tableId + '\',\'' + row.title + '\')"><i class="fa fa-edit"></i>编辑</a> ');
-                    actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.tableId + '\')"><i class="fa fa-remove"></i>删除</a> ');
+                    actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit_tab(\'' + row.tableId + '\', \'' + '《' + row.title + '》' + '\')"><i class="fa fa-edit"></i>编 辑</a>&nbsp;&nbsp;');
+                    actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.tableId + '\')"><i class="fa fa-remove"></i>删 除</a> ');
                     return actions.join('');
                 }
             }
@@ -150,9 +165,26 @@
       $.operate.detail_tab(data.getAttribute('article-id'));
     }
 
+    let openFlag = false;
+    $("#toolbar").addClass("toolbar-disable");
+    $("#bootstrap-table").bind('toggle-custom-view.bs.table',function()
+    {
+        openFlag = !openFlag;
+        if(openFlag)
+        {
+            $("#toolbar").removeClass("toolbar-disable");
+        }
+        else
+        {
+            //$("#toolbar").remove();
+            $("#toolbar").addClass("toolbar-disable");
+        }
+    })
+
     $(document).ready(function() {
         $('.search-input').css('width', '320px');
     });
+
 </script>
 </body>
 </html>

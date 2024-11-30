@@ -21,5 +21,18 @@
         </where>
     </select>
 
+    <insert id="insert" parameterType="com.ruoyi.system.domain.FavoriteArticle">
+        insert into favorite_article(user_id,article_id)
+        values(#{userId},#{articleId})
+    </insert>
+
+    <insert id="insert_batch" parameterType="list">
+        insert into favorite_article(user_id,article_id)
+        values
+        <foreach collection="list" item="x" separator=",">
+            (#{x.userId},#{x.articleId})
+        </foreach>
+    </insert>
+
 
 </mapper>

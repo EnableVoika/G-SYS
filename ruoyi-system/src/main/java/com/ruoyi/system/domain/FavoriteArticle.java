@@ -2,15 +2,15 @@ package com.ruoyi.system.domain;
 
 public class FavoriteArticle {
 
-    private long userId;
+    private Long userId;
 
     private String articleId;
 
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
