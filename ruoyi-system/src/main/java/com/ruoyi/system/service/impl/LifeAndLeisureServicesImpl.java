@@ -14,6 +14,8 @@ import com.ruoyi.system.mapper.FavoriteArticleMapper;
 import com.ruoyi.system.mapper.LifeAndLeisureMapper;
 import com.ruoyi.system.service.LifeAndLeisureServices;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ import java.util.List;
 @Service
 public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
 
+    private static final Logger log = LoggerFactory.getLogger(LifeAndLeisureServicesImpl.class);
     @Resource
     private LifeAndLeisureMapper dao;
 
@@ -133,7 +136,10 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         if (null == po)
             throw new ServiceExcept("文章不存在");
         if ( !"1".equals(dto.getUpdateBy()) && !dto.getUpdateBy().equals(po.getCreateBy()))
+        {
+            log.error("dto.updateBy(也是当前用户)={},po.createBy={}",dto.getUpdateBy(),po.getCreateBy());
             throw new ServiceExcept("你没有权限修改这篇文章");
+        }
         // 虽然编译器能处理自加传参的先后顺序，但我还是不喜欢这么写
         dto.setVersion(po.getVersion() + 1);
         String tag = dto.getTags();
