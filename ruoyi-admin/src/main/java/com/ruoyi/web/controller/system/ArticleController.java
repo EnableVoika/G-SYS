@@ -120,7 +120,7 @@ public class ArticleController extends BaseController {
         startPage();
         Article condition = new Article();
         condition.setCreateBy(String.valueOf(getUserId()));
-        List<Article> data = services.search(condition);
+        List<Article> data = services.search_my_publish(condition);
         return getDataTable(data);
     }
 

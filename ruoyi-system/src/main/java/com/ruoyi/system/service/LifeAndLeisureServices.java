@@ -13,6 +13,8 @@ public interface LifeAndLeisureServices {
      */
     List<Article> search(Article condition);
 
+    List<Article> search_my_publish(Article condition);
+
     /**
      * 查询文章详情
      */

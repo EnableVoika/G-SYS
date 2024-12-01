@@ -18,14 +18,9 @@
 <div class="main-content">
     <form class="form-horizontal m" id="form-article-edit" th:object="${article}">
         <!-- 文章ID -->
+        <input id="tableId" name="tableId" class="form-control" type="hidden" th:field="*{tableId}">
         <div class="form-group">
-            <label class="col-sm-2 control-label is-required">文章ID：</label>
-            <div class="col-sm-10">
-                <input id="tableId" name="tableId" class="form-control" type="hidden" th:field="*{tableId}">
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-2 control-label is-required">标题：</label>
+            <label class="col-sm-2 control-label is-required">文章标题：</label>
             <div class="col-sm-10">
                 <input id="title" name="title" class="form-control" type="text" th:field="*{title}" required>
             </div>
@@ -49,7 +44,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">来源：</label>
+            <label class="col-sm-2 control-label">来源处：</label>
             <div class="col-sm-10">
                 <input id="source" name="source" class="form-control" type="text" th:field="*{source}">
             </div>
@@ -64,7 +59,16 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">内容：</label>
+            <label class="col-sm-2 control-label">成人内容：</label>
+            <div class="col-sm-10">
+                <div class="radio-box" th:each="dict : ${@dict.getType('r18_flag')}">
+                    <input type="radio" th:id="${dict.dictCode}" name="r18" th:value="${dict.dictValue}" th:field="*{r18}">
+                    <label th:for="${dict.dictCode}" th:text="${dict.dictLabel}"></label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">正文：</label>
             <div class="col-sm-10">
                 <input id="article-content" name="content" type="hidden">
                 <div class="summernote" th:utext="*{content}"></div>

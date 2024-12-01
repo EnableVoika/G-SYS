@@ -1,6 +1,8 @@
 package com.ruoyi.system.service.impl;
 
 import com.ruoyi.common.constant.Constants;
+import com.ruoyi.common.core.domain.entity.SysDictData;
+import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.CacheUtils;
 import com.ruoyi.common.utils.ShiroUtils;
@@ -10,10 +12,7 @@ import com.ruoyi.system.domain.Article;
 import com.ruoyi.system.domain.ArticleHistory;
 import com.ruoyi.system.domain.ArticleTag;
 import com.ruoyi.system.domain.FavoriteArticle;
-import com.ruoyi.system.mapper.ArticleHistoryMapper;
-import com.ruoyi.system.mapper.ArticleTagMapper;
-import com.ruoyi.system.mapper.FavoriteArticleMapper;
-import com.ruoyi.system.mapper.LifeAndLeisureMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.LifeAndLeisureServices;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -22,9 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
@@ -41,6 +38,9 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
 
     @Resource
     private ArticleHistoryMapper ahm;
+
+    @Resource
+    private SysDictDataMapper sddm;
 
     private static void add_cache(Article _Article)
     {
@@ -66,14 +66,54 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         return tag;
     }
 
+    private boolean can_access_r18()
+    {
+        // 超级管理员一律允许
+        if (1L == ShiroUtils.getUserId())
+            return true;
+        List<SysDictData> canAccessR18Dict = sddm.selectDictDataByType(Constants.CAN_ACCESS_R18_ROLE_DICT_NAME);
+        if (CollectionUtils.isEmpty(canAccessR18Dict))
+            return false;
+        Set<String> canAccessR18RoleSet = new HashSet<>();
+        for (SysDictData sysDictData : canAccessR18Dict)
+        {
+            canAccessR18RoleSet.add(sysDictData.getDictValue());
+        }
+        List<SysRole> roles = ShiroUtils.getSysUser().getRoles();
+        if (CollectionUtils.isNotEmpty(roles))
+        {
+            for (SysRole role : roles)
+            {
+                for (String s : canAccessR18RoleSet)
+                {
+                    if (role.getRoleKey().equals(s) || role.getRoleName().equals(s))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * 查询文章列表
      * @return
      */
     @Override
     public List<Article> search(Article condition) {
+        if (!can_access_r18())
+            condition.setR18(0);
         List<Article> pos = dao.search(condition);
         return pos;
+    }
+
+    /**
+     * 查询我发布文章列表
+     * 因为涉及到r18内容过滤，自己的文章不过滤，所以单独一个新的函数
+     * @return
+     */
+    @Override
+    public List<Article> search_my_publish(Article condition) {
+        return dao.search(condition);
     }
 
     /**

@@ -31,18 +31,16 @@ public class Article extends BaseEntity {
     /** 文章状态 1=关闭，0=正常 */
     private Integer status;
 
+    /**
+     * r18标记
+     * 1=r19
+     * 0=正常
+     */
+    private Integer r18;
+
     public Article()
     {
 
-    }
-
-    public Article(String tableId, String archiveNo, String author, String title, String content)
-    {
-        this.tableId = tableId;
-        this.archiveNo = archiveNo;
-        this.author = author;
-        this.title = title;
-        this.content = content;
     }
 
     public String getTableId()
@@ -123,5 +121,13 @@ public class Article extends BaseEntity {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getR18() {
+        return r18;
+    }
+
+    public void setR18(Integer r18) {
+        this.r18 = r18;
     }
 }

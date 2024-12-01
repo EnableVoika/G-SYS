@@ -14,6 +14,7 @@
         <result property="tags"    column="tags"    />
         <result property="source"    column="source"    />
         <result property="status"    column="status"    />
+        <result property="r18"    column="r18"    />
         <result property="remark"    column="remark"    />
         <result property="del"    column="del"    />
         <result property="createBy"      column="create_by"      />
@@ -27,7 +28,7 @@
     </resultMap>
 
     <sql id="selectArticleHistoryVo">
-        select table_id, archive_no, author, title, content,tags,source,del,status,original_create_by,
+        select table_id, archive_no, author, title, content,tags,source,del,status ,r18 ,original_create_by,
         original_create_time, original_update_by, original_update_time, create_by, create_time, update_by,
         update_time, remark, version
         from article_history
@@ -95,6 +96,9 @@
         <if test="null != status">
             ,status
         </if>
+        <if test="null != r18">
+            ,r18
+        </if>
         <if test="null != originalCreateBy">
             ,original_create_by
         </if>
@@ -143,6 +147,9 @@
         ,0
         <if test="null != status">
             ,#{status}
+        </if>
+        <if test="null != r18">
+            ,#{r18}
         </if>
         <if test="null != originalCreateBy">
             ,#{originalCreateBy}

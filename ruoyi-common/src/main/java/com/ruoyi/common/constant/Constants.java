@@ -126,4 +126,7 @@ public class Constants
     public static final String DEFAULT_CACHE_NAME = "default_cache";
 
     public static final String ARTICLE_CACHE_NAME = "article_cache";
+
+    public static final String CAN_ACCESS_R18_ROLE_DICT_NAME = "can_access_r18_role";
+
 }

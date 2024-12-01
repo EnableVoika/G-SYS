@@ -38,6 +38,13 @@ public class ArticleHistory extends BaseEntity {
     /** 文章状态 1=关闭，0=正常 */
     private Integer status;
 
+    /**
+     * r18标记
+     * 1=r19
+     * 0=正常
+     */
+    private Integer r18;
+
     /** 创建者 */
     private String originalCreateBy;
 
@@ -77,6 +84,7 @@ public class ArticleHistory extends BaseEntity {
         this.tags = original.getTags();
         this.source = original.getSource();
         this.status = original.getStatus();
+        this.r18 = original.getR18();
         this.originalCreateBy = original.getCreateBy();
         this.originalCreateTime = original.getCreateTime();
         this.originalUpdateBy = original.getUpdateBy();
@@ -211,5 +219,13 @@ public class ArticleHistory extends BaseEntity {
 
     public void setOriginalUpdateTime(Date originalUpdateTime) {
         this.originalUpdateTime = originalUpdateTime;
+    }
+
+    public Integer getR18() {
+        return r18;
+    }
+
+    public void setR18(Integer r18) {
+        this.r18 = r18;
     }
 }
