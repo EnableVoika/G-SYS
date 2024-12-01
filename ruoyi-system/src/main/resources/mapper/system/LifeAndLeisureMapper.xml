@@ -21,7 +21,7 @@
     </resultMap>
 
     <sql id="selectArticleVo">
-        select table_id, archive_no, author, title, content,tags,source,del,status, create_time, update_by, update_time, remark, version
+        select table_id, archive_no, author, title, content,tags,source,del,status,create_by, create_time, update_by, update_time, remark, version
         from article
     </sql>
 
