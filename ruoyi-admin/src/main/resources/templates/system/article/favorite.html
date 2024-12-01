@@ -91,7 +91,38 @@
                 field : 'content',
                 title : '内容',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip_2(value, 30, "open", nll);
+                    var htmlEntities = {
+                        '&lt;': '<',   // 小于号
+                        '&gt;': '>',   // 大于号
+                        '&amp;': '&',  // 与符号
+                        '&quot;': '"', // 双引号
+                        '&#39;': "'",  // 单引号
+                        '&nbsp;': ' ', // 不换行空格
+                        '&cent;': '¢',  // 分币符
+                        '&pound;': '£', // 英镑符号
+                        '&yen;': '¥',   // 日元符号
+                        '&euro;': '€',  // 欧元符号
+                        '&copy;': '©',  // 版权符号
+                        '&reg;': '®',   // 注册商标符号
+                        '&times;': '×', // 乘号
+                        '&divide;': '÷',// 除号
+                        '&laquo;': '«', // 左双角引号
+                        '&raquo;': '»', // 右双角引号
+                        '&lt;': '<',    // 小于号
+                        '&gt;': '>',    // 大于号
+                        '&times;': '×', // 乘号
+                        '&bull;': '•',  // 项目符号
+                        '&deg;': '°',   // 度符号
+                        '&hellip;': '…', // 省略号
+                        '&prime;': '′',  // 单引号
+                        '&Prime;': '″',  // 双引号
+                    };
+                    value = value.replace(/&lt;.*?&gt;/g, '');
+                    value = value.replace(/&[a-zA-Z0-9#]+;/g, function(entity) {
+                        return htmlEntities[entity] || entity;
+                    });
+                    value = value.replace('&nbsp;','');
+                    return $.table.tooltip_2(value, 38, "open", null);
                 }
             }]
         };
