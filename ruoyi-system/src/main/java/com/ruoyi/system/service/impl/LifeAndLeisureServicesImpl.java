@@ -122,7 +122,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         {
             tag = parse_separator(tag);
             dto.setTags(tag);
-            List<String> tags = Arrays.asList(tag.split(";"));
+            String[] tags = tag.split(";");
             ArrayList<ArticleTag> articleTags = new ArrayList<>();
             for (String x : tags)
             {
@@ -148,10 +148,8 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             throw new ServiceExcept("你没有权限修改这篇文章");
         }
         // 虽然编译器能处理自加传参的先后顺序，但我还是不喜欢这么写
-        long version = po.getVersion() + 1;
-        dto.setVersion(version);
+        dto.setVersion(po.getVersion() + 1);
         ArticleHistory articleHistory = new ArticleHistory(po);
-        articleHistory.setVersion(version);
         articleHistory.setCreateBy(String.valueOf(ShiroUtils.getUserId()));
         ahm.insert(articleHistory);
         String tag = dto.getTags();
@@ -160,7 +158,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         {
             tag = parse_separator(tag);
             dto.setTags(tag);
-            List<String> tags = Arrays.asList(tag.split(";"));
+            String[] tags = tag.split(";");
             ArrayList<ArticleTag> articleTags = new ArrayList<>();
             for (String x : tags)
             {
