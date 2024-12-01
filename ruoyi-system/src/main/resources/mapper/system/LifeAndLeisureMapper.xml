@@ -32,6 +32,9 @@
             <if test="null != createBy and '' != createBy">
                 and create_by = #{createBy}
             </if>
+            <if test="null != status">
+                and status = #{status}
+            </if>
         </where>
     </select>
 

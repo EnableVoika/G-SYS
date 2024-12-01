@@ -78,9 +78,11 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     public Article find_article(String _Id)
     {
         Article po = get_cache(_Id);
-        if (null != po)
-            return po;
-        po = dao.find_article(_Id);
+        if (null == po)
+        {
+            if (null == (po = dao.find_article(_Id)))
+                return null;
+        }
         add_cache(po);
         return po;
     }
