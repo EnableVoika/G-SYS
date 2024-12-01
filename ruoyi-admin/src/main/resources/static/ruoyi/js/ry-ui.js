@@ -327,6 +327,25 @@ var table = {
                     return _text;
                 }
             },
+            tooltip_2: function (value, length, target, _Tooltip) {
+                var _length = $.common.isEmpty(length) ? 20 : length;
+                var _text = "";
+                var _value = $.common.nullToStr(value);
+                var _target = $.common.isEmpty(target) ? 'copy' : target;
+                if (_value.length > _length) {
+                    _text = _value.substr(0, _length) + "...";
+                    _value = _value.replace(/\'/g,"&apos;");
+                    _value = _value.replace(/\"/g,"&quot;");
+                    var actions = [];
+                    _Tooltip = null === _Tooltip ? '' : _Tooltip;
+                    actions.push($.common.sprintf('<input style="opacity: 0;position: absolute;z-index:-1" type="text" value="%s"/>', _value));
+                    actions.push($.common.sprintf('<a href="###" class="tooltip-show" data-toggle="'+ _Tooltip +'" data-target="%s" title="%s">%s</a>', _target, _value, _text));
+                    return actions.join('');
+                } else {
+                    _text = _value;
+                    return _text;
+                }
+            },
             // 下拉按钮切换
             dropdownToggle: function (value) {
                 var actions = [];
@@ -1090,9 +1109,10 @@ var table = {
                 table.set();
                 $.modal.openTab("详细" + table.options.modalName, $.operate.detailUrl(id));
             },
-            detail_tab: function(_Id) {
+            detail_tab: function(_Id,_TabName) {
                 table.set();
-                $.modal.openTab(table.options.tabTitle, $.operate.detailUrl(_Id));
+                _TabName = (null === _TabName || '' === _TabName) ? table.options.tabTitle : _TabName;
+                $.modal.openTab(_TabName, $.operate.detailUrl(_Id));
             },
             // 详细访问地址
             detailUrl: function(id) {

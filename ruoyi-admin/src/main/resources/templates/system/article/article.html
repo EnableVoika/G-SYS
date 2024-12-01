@@ -41,6 +41,7 @@
 <th:block th:include="include :: bootstrap-table-custom-view-js" />
 <script th:inline="javascript">
     var prefix = ctx + "system/article";
+    var viewFlag = [[${@permission.hasPermi('system:article:view')}]];
 
     $(function() {
         var options = {
@@ -66,6 +67,13 @@
                 title : '档号'
             },
             {
+                field : 'title',
+                title : '标题',
+                formatter: function(value, row, index) {
+                    return $.table.tooltip_2(value, 20, "open", null);
+                }
+            },
+            {
                 field : 'author',
                 title : '作者'
             },
@@ -73,7 +81,7 @@
                 field : 'tags',
                 title : '标签',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 20, "open");
+                    return $.table.tooltip_2(value, 20, "open",null);
                 }
             },
             {
@@ -81,19 +89,23 @@
                 title : '来源'
             },
             {
-                field : 'title',
-                title : '标题',
-                formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 20, "open");
-                }
-            },
-            {
                 field : 'content',
                 title : '内容',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 30, "open");
+                    return $.table.tooltip_2(value, 30, "open", null);
                 }
-            }]
+            },
+            {
+                title: '操作',
+                align: 'center',
+                formatter: function(value, row, index)
+                {
+                    var actions = [];
+                    actions.push('<a class="btn btn-primary btn-xs ' + viewFlag + '" href="javascript:void(0)" onclick="$.operate.detail_tab(\'' + row.tableId + '\', \'' + '《' + row.title + '》' + '\')"><i class="fa fa-edit"></i>查 看</a>');
+                    return actions.join('');
+                }
+            }
+            ]
         };
         $.table.init(options);
     });
@@ -130,8 +142,8 @@
        }
     function detailClick(data)
     {
-      table.options.tabTitle = data.getAttribute('title-name');
-      $.operate.detail_tab(data.getAttribute('article-id'));
+      table.options.tabTitle = "《" + data.getAttribute('title-name') + "》";
+      $.operate.detail_tab(data.getAttribute('article-id'),null);
     }
 
     $(document).ready(function() {

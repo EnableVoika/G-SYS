@@ -7,8 +7,10 @@ import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.system.domain.Article;
+import com.ruoyi.system.domain.ArticleHistory;
 import com.ruoyi.system.domain.ArticleTag;
 import com.ruoyi.system.domain.FavoriteArticle;
+import com.ruoyi.system.mapper.ArticleHistoryMapper;
 import com.ruoyi.system.mapper.ArticleTagMapper;
 import com.ruoyi.system.mapper.FavoriteArticleMapper;
 import com.ruoyi.system.mapper.LifeAndLeisureMapper;
@@ -36,6 +38,9 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
 
     @Resource
     private ArticleTagMapper atm;
+
+    @Resource
+    private ArticleHistoryMapper ahm;
 
     private static void add_cache(Article _Article)
     {
@@ -82,8 +87,8 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         {
             if (null == (po = dao.find_article(_Id)))
                 return null;
+            add_cache(po);
         }
-        add_cache(po);
         return po;
     }
 
@@ -143,7 +148,12 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             throw new ServiceExcept("你没有权限修改这篇文章");
         }
         // 虽然编译器能处理自加传参的先后顺序，但我还是不喜欢这么写
-        dto.setVersion(po.getVersion() + 1);
+        long version = po.getVersion() + 1;
+        dto.setVersion(version);
+        ArticleHistory articleHistory = new ArticleHistory(po);
+        articleHistory.setVersion(version);
+        articleHistory.setCreateBy(String.valueOf(ShiroUtils.getUserId()));
+        ahm.insert(articleHistory);
         String tag = dto.getTags();
         atm.remove(dto.getTableId());
         if (StringUtils.isNotEmpty(tag))
