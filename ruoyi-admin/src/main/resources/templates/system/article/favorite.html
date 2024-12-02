@@ -73,7 +73,7 @@
                 field : 'tags',
                 title : '标签',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip_2(value, 20, "open", null);
+                    return $.table.tooltip_2(value, 14, "open", null);
                 }
             },
             {
@@ -84,7 +84,7 @@
                 field : 'title',
                 title : '标题',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip_2(value, 20, "open", null);
+                    return $.table.tooltip_2(value, 14, "open", null);
                 }
             },
             {
@@ -122,7 +122,7 @@
                         return htmlEntities[entity] || entity;
                     });
                     value = value.replace('&nbsp;','');
-                    return $.table.tooltip_2(value, 38, "open", null);
+                    return $.table.tooltip_2(value, 30, "open", null);
                 }
             }]
         };

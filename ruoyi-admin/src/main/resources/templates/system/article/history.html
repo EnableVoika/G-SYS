@@ -75,7 +75,7 @@
                 field : 'title',
                 title : '标题',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 20, "open");
+                    return $.table.tooltip(value, 14, "open");
                 }
             },
             {
@@ -86,7 +86,7 @@
                 field : 'tags',
                 title : '标签',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 20, "open");
+                    return $.table.tooltip(value, 14, "open");
                 }
             },
             {
@@ -128,7 +128,7 @@
                         return htmlEntities[entity] || entity;
                     });
                     value = value.replace('&nbsp;','');
-                    return $.table.tooltip_2(value, 38, "open", null);
+                    return $.table.tooltip_2(value, 30, "open", null);
                 }
             },
             {
