@@ -181,7 +181,10 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     public int edit_article(Article dto) {
         Article po =  dao.find_article(dto.getTableId());
         if (null == po)
+        {
+            log.error("请求参数对象:{}",dto);
             throw new ServiceExcept("文章不存在");
+        }
         if ( !"1".equals(dto.getUpdateBy()) && !dto.getUpdateBy().equals(po.getCreateBy()))
         {
             log.error("dto.updateBy(也是当前用户)={},po.createBy={}",dto.getUpdateBy(),po.getCreateBy());

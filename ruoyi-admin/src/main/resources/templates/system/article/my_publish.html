@@ -137,11 +137,20 @@
                         '&prime;': '′',  // 单引号
                         '&Prime;': '″',  // 双引号
                     };
-                    value = value.replace(/&lt;.*?&gt;/g, '');
-                    value = value.replace(/&[a-zA-Z0-9#]+;/g, function(entity) {
-                        return htmlEntities[entity] || entity;
-                    });
-                    value = value.replace('&nbsp;','');
+                    if(null !== value)
+                    {
+                        value = value.replace(/&lt;.*?&gt;/g, '');
+                    }
+                    if(null !== value)
+                    {
+                        value = value.replace(/&[a-zA-Z0-9#]+;/g, function(entity) {
+                            return htmlEntities[entity] || entity;
+                        });
+                    }
+                    if(null !== value)
+                    {
+                        value = value.replace('&nbsp;','');
+                    }
                     return $.table.tooltip_2(value, 30, "open", null);
                 }
             },
@@ -172,7 +181,7 @@
                 .replace('%title%', row.title)
                 .replace('%title-name%', row.title)
                 .replace('%author%', row.author)
-                .replace('%content%', truncateString(row.content.replace(/<\/?.+?\/?>/g,''), 150))
+                .replace('%content%', truncateString(null === row.content ? '' : row.content.replace(/<\/?.+?\/?>/g,''), 150))
                 .replace('%source%', row.source)
                 .replace('%tags%',row.tags)
             })
