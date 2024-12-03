@@ -40,6 +40,16 @@
             <if test="null != r18">
                 and r18 = #{r18}
             </if>
+            <if test="null != searchValue and '' != searchValue">
+                and
+                (
+                    archive_no like CONCAT('%',#{searchValue},'%') or
+                    author like CONCAT('%',#{searchValue},'%') or
+                    title like CONCAT('%',#{searchValue},'%') or
+                    content like CONCAT('%',#{searchValue},'%') or
+                    tags like CONCAT('%',#{searchValue},'%')
+                )
+            </if>
         </where>
     </select>
 

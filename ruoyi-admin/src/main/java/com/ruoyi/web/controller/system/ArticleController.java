@@ -113,9 +113,8 @@ public class ArticleController extends BaseController {
 
     @GetMapping("/my_publish/list")
     @ResponseBody
-    public TableDataInfo my_publish_list()
+    public TableDataInfo my_publish_list(Article condition)
     {
-        Article condition = new Article();
         condition.setCreateBy(String.valueOf(getUserId()));
         List<Article> data = services.search_my_publish(condition);
         return getDataTable(data);
