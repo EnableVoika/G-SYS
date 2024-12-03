@@ -54,6 +54,11 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         return CacheUtils.get(Constants.ARTICLE_CACHE_NAME,_Id);
     }
 
+    private static void remove_cache(String _Id)
+    {
+        CacheUtils.remove(Constants.ARTICLE_CACHE_NAME,_Id);
+    }
+
     private static String separator_symbol[] = {"；",",","，","、","/","。","\\."," "};
 
     private static String parse_separator(String tag)
@@ -122,6 +127,25 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         return dao.search(condition);
     }
 
+    private static boolean has_access_article(Long _CurrentUserId, Article _Po,int _SpecialAccess)
+    {
+        if (1 == _Po.getDel())
+            return false;
+        // 如果授权了特别访问，直接允许访问
+        if (1 == _SpecialAccess)
+            return true;
+        // 先判断当前用户是不是这篇文章的主人
+        int isMaster = 0;
+        if (_CurrentUserId.equals(Long.valueOf(_Po.getCreateBy())))
+            isMaster = 1;
+        // 如果不是文章主人。开始验证各项权限是否都通过，通过才能访问
+        if (0 == isMaster)
+        {
+            return 0 == _Po.getStatus();
+        }
+       return true;
+    }
+
     /**
      * 查询文章详情
      */
@@ -134,6 +158,12 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             if (null == (po = dao.find_article(_Id)))
                 return null;
             add_cache(po);
+        }
+        Long currentUserId = ShiroUtils.getUserId();
+        if (!has_access_article(currentUserId,po,0))
+        {
+            log.error("当前用户{ID:{},名称:{},账号:{}},访问文章时没有权限，文章对象{}",currentUserId,ShiroUtils.getSysUser().getUserName(),ShiroUtils.getSysUser().getLoginName(),po);
+            throw new ServiceExcept("没有权限访问该文章");
         }
         return po;
     }
@@ -257,6 +287,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             }
             atm.insert_batch(articleTags);
         }
+        add_cache(dao.find_article(dto.getTableId()));
         return dao.save_article(dto);
     }
 
@@ -267,12 +298,19 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             throw new ServiceExcept("文章不存在");
         if ( 1L != ShiroUtils.getUserId() && !Long.valueOf(po.getCreateBy()).equals(ShiroUtils.getUserId()))
             throw new ServiceExcept("你没有权限修改这篇文章");
+        remove_cache(_Id);
         return dao.del_article(_Id);
     }
 
     @Override
-    public int del_article_batch(List<String> _Ids) {
-
+    public int del_article_batch(List<String> _Ids)
+    {
+        if (CollectionUtils.isEmpty(_Ids))
+            return 0;
+        for (String id : _Ids)
+        {
+            remove_cache(id);
+        }
         return dao.del_article_batch(_Ids);
     }
 
