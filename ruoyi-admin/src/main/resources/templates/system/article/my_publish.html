@@ -16,6 +16,25 @@
 <body class="gray-bg">
 <div class="container-div">
     <div class="row">
+        <div class="col-sm-12 search-collapse">
+            <form id="complex-form">
+                <div class="select-list">
+                    <ul>
+                        <li class="select-selectpicker">
+                            <label style="width: 80px">状态：</label>
+                            <select name="status" data-none-selected-text="请选择" th:with="type=${@dict.getType('article_status')}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm m50" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset('complex-form')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
         <div class="btn-group-sm toolbar-disable" id="toolbar" role="group">
             <a class="btn btn-success" onclick="$.operate.addTab()" shiro:hasPermission="system:article:add">
                 <i class="fa fa-plus"></i> 新 增
