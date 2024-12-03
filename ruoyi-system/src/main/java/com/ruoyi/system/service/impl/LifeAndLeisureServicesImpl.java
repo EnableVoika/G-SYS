@@ -5,6 +5,7 @@ import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.CacheUtils;
+import com.ruoyi.common.utils.PageUtils;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
@@ -52,7 +53,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         return CacheUtils.get(Constants.ARTICLE_CACHE_NAME,_Id);
     }
 
-    private static String separator_symbol[] = {"；",",","，","、","/","。","\\."};
+    private static String separator_symbol[] = {"；",",","，","、","/","。","\\."," "};
 
     private static String parse_separator(String tag)
     {
@@ -102,8 +103,8 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
     public List<Article> search(Article condition) {
         if (!can_access_r18())
             condition.setR18(0);
-        List<Article> pos = dao.search(condition);
-        return pos;
+        PageUtils.startPage();
+        return dao.search(condition);
     }
 
     /**
@@ -113,6 +114,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
      */
     @Override
     public List<Article> search_my_publish(Article condition) {
+        PageUtils.startPage();
         return dao.search(condition);
     }
 
@@ -148,6 +150,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             {
                 articleIds.add(datum.getArticleId());
             }
+            PageUtils.startPage();
             data = dao.search_batch(articleIds);
         }
         return data;

@@ -44,7 +44,6 @@ public class ArticleController extends BaseController {
     @ResponseBody
     public TableDataInfo textList(Article condition)
     {
-        startPage();
         condition.setStatus(0);
         List<Article> documentList = services.search(condition);
         return getDataTable(documentList);
@@ -86,7 +85,6 @@ public class ArticleController extends BaseController {
     public TableDataInfo favorite_list()
     {
         SysUser user = getSysUser();
-        startPage();
         List<Article> data = services.find_favorite(user.getUserId());
         return getDataTable(data);
     }
@@ -117,7 +115,6 @@ public class ArticleController extends BaseController {
     @ResponseBody
     public TableDataInfo my_publish_list()
     {
-        startPage();
         Article condition = new Article();
         condition.setCreateBy(String.valueOf(getUserId()));
         List<Article> data = services.search_my_publish(condition);
