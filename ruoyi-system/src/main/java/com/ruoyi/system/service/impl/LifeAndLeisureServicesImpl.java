@@ -3,6 +3,7 @@ package com.ruoyi.system.service.impl;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysRole;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.CacheUtils;
 import com.ruoyi.common.utils.PageUtils;
@@ -80,7 +81,10 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         {
             canAccessR18RoleSet.add(sysDictData.getDictValue());
         }
-        List<SysRole> roles = ShiroUtils.getSysUser().getRoles();
+        SysUser sysUser = ShiroUtils.getSysUser();
+        if (null == sysUser)
+            return false;
+        List<SysRole> roles = sysUser.getRoles();
         if (CollectionUtils.isNotEmpty(roles))
         {
             for (SysRole role : roles)
