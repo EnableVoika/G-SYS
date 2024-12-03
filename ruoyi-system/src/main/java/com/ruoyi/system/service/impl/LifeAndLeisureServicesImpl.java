@@ -222,6 +222,44 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         return res;
     }
 
+    /**
+     * 保存文章，不记录历史记录
+     * 并且文章状态恒定为草稿 status = 2
+     * @param dto
+     * @return
+     */
+    @Transactional
+    @Override
+    public int save_article(Article dto) {
+        Article po =  dao.find_article(dto.getTableId());
+        if (null == po)
+        {
+            log.error("请求参数对象:{}",dto);
+            throw new ServiceExcept("文章不存在");
+        }
+        if ( !"1".equals(dto.getUpdateBy()) && !dto.getUpdateBy().equals(po.getCreateBy()))
+        {
+            log.error("dto.updateBy(也是当前用户)={},po.createBy={}",dto.getUpdateBy(),po.getCreateBy());
+            throw new ServiceExcept("你没有权限修改这篇文章");
+        }
+        String tag = dto.getTags();
+        atm.remove(dto.getTableId());
+        if (StringUtils.isNotEmpty(tag))
+        {
+            tag = parse_separator(tag);
+            dto.setTags(tag);
+            String[] tags = tag.split(";");
+            ArrayList<ArticleTag> articleTags = new ArrayList<>();
+            for (String x : tags)
+            {
+                ArticleTag articleTag = new ArticleTag(dto.getTableId(),x);
+                articleTags.add(articleTag);
+            }
+            atm.insert_batch(articleTags);
+        }
+        return dao.save_article(dto);
+    }
+
     @Override
     public int del_article(String _Id) {
         Article po =  dao.find_article(_Id);

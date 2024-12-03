@@ -185,6 +185,36 @@
         where del = 0 and table_id = #{tableId}
     </update>
 
+    <update id="save_article" parameterType="com.ruoyi.system.domain.Article">
+        update article set
+        status = 2
+        <if test="null != archiveNo">
+            ,archive_no = #{archiveNo}
+        </if>
+        <if test="null != author">
+            ,author = #{author}
+        </if>
+        <if test="null != title">
+            ,title = #{title}
+        </if>
+        <if test="null != content">
+            ,content = #{content}
+        </if>
+        <if test="null != tags">
+            ,tags = #{tags}
+        </if>
+        <if test="null != source">
+            ,source = #{source}
+        </if>
+        <if test="null != r18">
+            ,r18 = #{r18}
+        </if>
+        <if test="null != remark">
+            ,remark = #{remark}
+        </if>
+        where del = 0 and table_id = #{tableId}
+    </update>
+
     <select id="get_version" resultType="long" parameterType="String">
         select version from article where del = 0 and table_id = #{id};
     </select>

@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.ruoyi.system.domain.Article;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 
 import java.util.List;
@@ -30,6 +31,8 @@ public interface LifeAndLeisureServices {
     int add_article(Article dto);
 
     int edit_article(Article dto);
+
+    int save_article(Article dto);
 
     int del_article(String _Id);
 

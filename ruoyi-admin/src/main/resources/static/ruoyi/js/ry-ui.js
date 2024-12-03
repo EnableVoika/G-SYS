@@ -1316,6 +1316,25 @@ var table = {
                 };
                 $.ajax(config)
             },
+            // _CloseTab = 0,不关闭当前窗口，_CloseTab = 1 关闭当前窗口
+            save_tab: function(url, data, callback, _CloseTab) {
+                var config = {
+                    url: url,
+                    type: "post",
+                    dataType: "json",
+                    data: data,
+                    beforeSend: function () {
+                        $.modal.loading("正在处理中，请稍候...");
+                    },
+                    success: function(result) {
+                        if (typeof callback == "function") {
+                            callback(result);
+                        }
+                        $.operate.success_tab_callback(result, _CloseTab);
+                    }
+                };
+                $.ajax(config)
+            },
             // 保存结果弹出msg刷新table表格
             ajaxSuccess: function (result) {
                 if (result.code == web_status.SUCCESS && table.options.type == table_type.bootstrapTable) {
@@ -1387,6 +1406,37 @@ var table = {
                     }
                     $.modal.close();
                     $.modal.closeTab();
+                } else if (result.code == web_status.WARNING) {
+                    $.modal.alertWarning(result.msg)
+                } else {
+                    $.modal.alertError(result.msg);
+                }
+                $.modal.closeLoading();
+            },
+            // 选项卡成功回调执行事件（父窗体静默更新），不会关闭当前窗口版本
+            // 1=关闭，0=不关闭
+            success_tab_callback: function(result,_CloseTab) {
+                if (result.code == web_status.SUCCESS) {
+                    var topWindow = $(window.parent.document);
+                    var currentId = $('.page-tabs-content', topWindow).find('.active').attr('data-panel');
+                    var topWindow = $('.RuoYi_iframe[data-id="' + currentId + '"]', topWindow)[0];
+                    if ($.common.isNotEmpty(topWindow) && $.common.isNotEmpty(currentId)) {
+                        var $contentWindow = topWindow.contentWindow;
+                        $contentWindow.$.modal.msgSuccess(result.msg);
+                        $contentWindow.$(".layui-layer-padding").removeAttr("style");
+                        if ($contentWindow.table.options.type == table_type.bootstrapTable) {
+                            $contentWindow.$.table.refresh();
+                        } else if ($contentWindow.table.options.type == table_type.bootstrapTreeTable) {
+                            $contentWindow.$.treeTable.refresh();
+                        }
+                    } else {
+                        $.modal.msgSuccess(result.msg);
+                    }
+                    if(_CloseTab)
+                    {
+                        $.modal.close();
+                        $.modal.closeTab();
+                    }
                 } else if (result.code == web_status.WARNING) {
                     $.modal.alertWarning(result.msg)
                 } else {

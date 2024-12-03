@@ -145,6 +145,14 @@ public class ArticleController extends BaseController {
         return toAjax(services.edit_article(dto));
     }
 
+    @PostMapping("/save")
+    @ResponseBody
+    public AjaxResult save_post(Article dto)
+    {
+        dto.setUpdateBy(String.valueOf(getUserId()));
+        return toAjax(services.save_article(dto));
+    }
+
     @PostMapping("/del")
     @ResponseBody
     public AjaxResult del(@RequestParam("ids") String _Ids)

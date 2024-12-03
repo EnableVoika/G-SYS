@@ -85,6 +85,8 @@
             </div>
         </div>
         <div class="article-btn">
+            <button class="btn btn-success" type="button" onclick="saveHandler()"><i class="fa fa-check"></i>&nbsp;保 存</button>
+            &nbsp;&nbsp;
             <button class="btn btn-primary" type="button" onclick="submitHandler()"><i class="fa fa-check"></i>&nbsp;提 交</button>
             &nbsp;&nbsp;
             <button class="btn btn-danger" type="button" onclick="closeItem()"><i class="fa fa-times"></i>&nbsp;取 消</button>
@@ -150,6 +152,16 @@
             var sHTML = $('.summernote').summernote('code');
             $("#article-content").val(sHTML);
             $.operate.saveTab(prefix + "/edit", $('#form-article-edit').serialize());
+        }
+    }
+
+    function saveHandler()
+    {
+        if ($.validate.form())
+        {
+            var sHTML = $('.summernote').summernote('code');
+            $("#article-content").val(sHTML);
+            $.operate.save_tab(prefix + "/save", $('#form-article-edit').serialize(), null, 0);
         }
     }
 </script>
