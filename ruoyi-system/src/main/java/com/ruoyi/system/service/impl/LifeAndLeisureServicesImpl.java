@@ -269,7 +269,7 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
         }
         if ( !"1".equals(dto.getUpdateBy()) && !dto.getUpdateBy().equals(po.getCreateBy()))
         {
-            log.error("dto.updateBy(也是当前用户)={},po.createBy={}",dto.getUpdateBy(),po.getCreateBy());
+            log.error("save_article():dto.updateBy(也是当前用户)={},po.createBy={}",dto.getUpdateBy(),po.getCreateBy());
             throw new ServiceExcept("你没有权限修改这篇文章");
         }
         String tag = dto.getTags();
@@ -287,8 +287,9 @@ public class LifeAndLeisureServicesImpl implements LifeAndLeisureServices {
             }
             atm.insert_batch(articleTags);
         }
+        int res = dao.save_article(dto);
         add_cache(dao.find_article(dto.getTableId()));
-        return dao.save_article(dto);
+        return res;
     }
 
     @Override

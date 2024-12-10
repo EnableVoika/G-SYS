@@ -69,12 +69,17 @@
             },
             {
                 field : 'archiveNo',
-                title : '档号'
+                title : '档号',
+                formatter: function(value, row, index)
+                {
+                    return $.table.tooltip_2(value, 6, "open", null);
+                }
             },
             {
                 field : 'title',
                 title : '标题',
-                formatter: function(value, row, index) {
+                formatter: function(value, row, index)
+                {
                     return $.table.tooltip(value, 14, "open");
                 }
             },
@@ -86,12 +91,16 @@
                 field : 'tags',
                 title : '标签',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip(value, 14, "open");
+                    return $.table.tooltip(value, 10, "open");
                 }
             },
             {
                 field : 'source',
-                title : '来源'
+                title : '来源',
+                formatter: function(value, row, index)
+                {
+                    return $.table.tooltip_2(value, 10, "open", null);
+                }
             },
             {
                 field : 'content',
@@ -161,14 +170,14 @@
         var view = ''
         if(data.length > 0) {
             $.each(data, function (i, row) {
-                view += template.replace('%tableId%', row.tableId)
-                .replaceAll('%archiveNo%', row.archiveNo)
+                view += template.replaceAll('%tableId%', row.tableId)
+                .replaceAll('%archiveNo%', truncateString(null === row.archiveNo ? '' : row.archiveNo, 6))
                 .replace('%title%', row.title)
                 .replace('%title-name%', row.title)
                 .replace('%author%', row.author)
                 .replace('%content%', truncateString(null === row.content ? '' : row.content.replace(/<\/?.+?\/?>/g,''), 150))
-                .replace('%source%', row.source)
-                .replace('%tags%',row.tags)
+                .replace('%source%', truncateString(null === row.source ? '' : row.source, 10))
+                .replace('%tags%',truncateString(null === row.tags ? '' : row.tags, 10))
             })
             return `<div class="row mx-0">${view}</div>`;
         } else {

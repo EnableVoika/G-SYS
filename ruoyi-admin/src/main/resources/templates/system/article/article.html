@@ -31,7 +31,7 @@
         <span style="color:#000000;font-size:medium">%content%</span><br>
         <span style="color:#008000;font-size:medium">
                                         档号：<a href="javascript:void(0)" onclick="handleView('%tableId%', '%archiveNo%')">%archiveNo%</a>
-               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者：%author%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来源：%source%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;标签：%tags%
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;作者：%author%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来源：<a href="javascript:void(0)" onclick="handle_view('来源', '%sourceAll%')">%source%</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;标签：<a href="javascript:void(0)" onclick="handle_view('标签', '%tagsAll%')">%tags%</a>
               </span>
         </p>
     </div>
@@ -64,7 +64,11 @@
             },
             {
                 field : 'archiveNo',
-                title : '档号'
+                title : '档号',
+                formatter: function(value, row, index)
+                {
+                    return $.table.tooltip_2(value, 6, "open", null);
+                }
             },
             {
                 field : 'title',
@@ -81,12 +85,16 @@
                 field : 'tags',
                 title : '标签',
                 formatter: function(value, row, index) {
-                    return $.table.tooltip_2(value, 14, "open",null);
+                    return $.table.tooltip_2(value, 10, "open",null);
                 }
             },
             {
                 field : 'source',
-                title : '来源'
+                title : '来源',
+                formatter: function(value, row, index)
+                {
+                    return $.table.tooltip_2(value, 10, "open", null);
+                }
             },
             {
                 field : 'content',
@@ -156,13 +164,15 @@
         if(data.length > 0) {
             $.each(data, function (i, row) {
                 view += template.replaceAll('%tableId%', row.tableId)
-                .replaceAll('%archiveNo%', row.archiveNo)
-                .replace('%title%', row.title)
-                .replace('%title-name%', row.title)
-                .replace('%author%', row.author)
-                .replace('%content%', truncateString(null === row.content ? '' : row.content.replace(/<\/?.+?\/?>/g,''), 150))
-                .replace('%source%', row.source)
-                .replace('%tags%',row.tags)
+                .replaceAll('%archiveNo%', truncateString(null === row.archiveNo ? '' : row.archiveNo, 6))
+                .replaceAll('%title%', row.title)
+                .replaceAll('%title-name%', row.title)
+                .replaceAll('%author%', row.author)
+                .replaceAll('%content%', truncateString(null === row.content ? '' : row.content.replace(/<\/?.+?\/?>/g,''), 150))
+                .replaceAll('%source%', truncateString(null === row.source ? '' : row.source, 10))
+                .replace('%sourceAll%', row.source)
+                .replaceAll('%tags%',truncateString(null === row.tags ? '' : row.tags, 10))
+                .replace('%tagsAll%', row.tags)
             })
             return `<div class="row mx-0">${view}</div>`;
         } else {
@@ -170,8 +180,14 @@
         }
       }
 
-    function handleView(tableId, archiveNo) {
+    function handleView(tableId, archiveNo)
+    {
         alert("tableId：" + tableId + "，archiveNo：" + archiveNo);
+    }
+
+    function handle_view(_Name, _Value)
+    {
+        alert(_Name + "：" + _Value);
     }
 
     function truncateString(str, maxLength) {

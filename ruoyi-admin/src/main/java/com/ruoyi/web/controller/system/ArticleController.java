@@ -62,8 +62,6 @@ public class ArticleController extends BaseController {
         {
             throw new ServiceExcept("文章不存在");
         }
-        if (!String.valueOf(getUserId()).equals(data.getCreateBy()) && 1 == data.getStatus())
-            throw new ServiceExcept("改文章暂时被关闭,无法被查看");
         mmap.put("title",data.getTitle());
         mmap.put("content",data.getContent());
         mmap.put("author",data.getAuthor());
