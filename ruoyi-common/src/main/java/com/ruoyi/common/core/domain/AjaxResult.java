@@ -32,7 +32,17 @@ public class AjaxResult extends HashMap<String, Object>
         /** 警告 */
         WARN(301),
         /** 错误 */
-        ERROR(500);
+        ERROR(500),
+        NOT_FOUND_FILE(501),
+        LOST_MOCK_ID(502),
+        MOCK_WRITE_FAIL(503),
+        DEL_FILE_FAIL(504),
+        DOWNLOAD_FAIL(505),
+        FILE_NOT_EXISTS(506),
+        USER_NOT_EMPTY(507),
+        FILE_OFFSET_IS_NULL_ERR(508),
+        FILE_OFFSET_LESS_THAN_ZERO_ERR(509),
+        FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510);
         private final int value;
 
         Type(int value)
@@ -255,6 +265,11 @@ public class AjaxResult extends HashMap<String, Object>
     public static AjaxResult fail(String msg, Object data)
     {
         return new AjaxResult(Type.ERROR, msg, data);
+    }
+
+    public static AjaxResult fail(Type type, String msg)
+    {
+        return new AjaxResult(type, msg, null);
     }
 
     /**
