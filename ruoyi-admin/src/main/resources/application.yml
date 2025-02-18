@@ -9,7 +9,8 @@ ruoyi:
   # 实例演示开关
   demoEnabled: true
   # 文件路径 示例（ Windows配置 D:/data/tmp/RcvFile/gsys，Linux配置 /home/ruoyi/uploadPath）
-  profile: /home/iy/RcvPath/gsys
+#  profile: /home/iy/RcvPath/gsys
+  profile: D:\data\tmp\RcvFile\gsys
 #  profile: /Users/gore/iy/RcvPath/gsys
   # 获取ip地址开关
   addressEnabled: false
@@ -17,10 +18,8 @@ ruoyi:
 gsys:
   profile: ${ruoyi.profile}
 cpp-api:
-  # /home/iy/RcvPath
-#  profile: D:\data\cpp-api
-  profile: /home/iy/RcvPath
-  # 5242880
+  profile: D:\data\tmp\RcvFile
+#  profile: /home/iy/RcvPath
   download-block-size: 10485760
 
 # 开发环境配置
