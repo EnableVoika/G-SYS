@@ -3,9 +3,12 @@ package com.ruoyi.web.controller.system;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.exception.ServiceExcept;
+import com.ruoyi.common.utils.CacheUtils;
+import com.ruoyi.framework.web.service.CacheService;
 import com.ruoyi.system.domain.WriteMockBO;
 import com.ruoyi.system.service.CommonFileServer;
 import com.ruoyi.web.controller.common.CommonController;
+import com.ruoyi.web.controller.domain.dto.RCopyDTO;
 import com.ruoyi.web.controller.domain.dto.WriteMockDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -307,6 +310,33 @@ public class CppAPIController {
         {
             log.error("写入Mock失败,:",e);
             return AjaxResult.fail(AjaxResult.Type.MOCK_WRITE_FAIL,"写入Mock失败");
+        }
+    }
+
+    @PostMapping("/rcopy/w")
+    public AjaxResult rcopyw(RCopyDTO _Dto)
+    {
+        try
+        {
+            CacheUtils.put(_Dto.getUsername(), _Dto.getData());
+        }
+        catch (RuntimeException re)
+        {
+            return AjaxResult.fail(re.getMessage());
+        }
+        return AjaxResult.ok();
+    }
+
+    @GetMapping(value = "/rcopy/r")
+    public String rcopyr(@RequestParam("username") String _Usrname)
+    {
+        try
+        {
+            return null == CacheUtils.get(_Usrname) ? "" : CacheUtils.get(_Usrname).toString();
+        }
+        catch (RuntimeException re)
+        {
+            return "";
         }
     }
 
