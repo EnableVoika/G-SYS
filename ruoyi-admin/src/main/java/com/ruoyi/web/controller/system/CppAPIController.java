@@ -313,7 +313,7 @@ public class CppAPIController {
         }
     }
 
-    @PostMapping("/rcopy/w")
+    @PostMapping("/rcopy")
     public AjaxResult rcopyw(RCopyDTO _Dto)
     {
         try
@@ -327,8 +327,8 @@ public class CppAPIController {
         return AjaxResult.ok();
     }
 
-    @GetMapping(value = "/rcopy/r")
-    public String rcopyr(@RequestParam("username") String _Usrname)
+    @GetMapping(value = "/rpaste")
+    public String rcopyr(@RequestParam("username") String _Usrname, HttpServletResponse response)
     {
         try
         {
