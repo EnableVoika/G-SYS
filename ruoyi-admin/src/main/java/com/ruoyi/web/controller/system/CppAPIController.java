@@ -308,7 +308,7 @@ public class CppAPIController {
         }
         catch (Exception e)
         {
-            log.error("写入Mock失败,:",e);
+            log.error("读取Mock失败,:",e);
             return AjaxResult.fail(AjaxResult.Type.MOCK_WRITE_FAIL,"写入Mock失败");
         }
     }

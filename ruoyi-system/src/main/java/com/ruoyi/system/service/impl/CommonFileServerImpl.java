@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.system.domain.WriteMockBO;
 import com.ruoyi.system.service.CommonFileServer;
@@ -164,7 +165,7 @@ public class CommonFileServerImpl implements CommonFileServer {
     public String read_mock(String _MockId) throws IOException {
         File mock = new File(_MockId);
         if (!mock.exists())
-            throw new ServiceExcept("mockId不存在，无法找到指定的mock");
+            throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS, "mockId不存在，无法找到指定的mock");
         FileReader fr = new FileReader(mock);
         BufferedReader br = new BufferedReader(fr);
         char buffer[] = new char[1024];
