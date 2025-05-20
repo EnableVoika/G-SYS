@@ -314,29 +314,36 @@ public class CppAPIController {
     }
 
     @PostMapping("/rcopy")
-    public AjaxResult rcopyw(RCopyDTO _Dto)
+    public AjaxResult rcopy(RCopyDTO _Dto)
     {
         try
         {
-            CacheUtils.put(_Dto.getUsername(), _Dto.getData());
+            if (null == _Dto.getUserid() || _Dto.getUserid().isEmpty())
+                return AjaxResult.fail("userid不能为空.");
+            CacheUtils.put(_Dto.getUserid(), _Dto.getData());
         }
         catch (RuntimeException re)
         {
-            return AjaxResult.fail(re.getMessage());
+            log.error("/rcopy接口出现异常: ", re);
+            return AjaxResult.fail("复制失败, 失败原因: " + re.getMessage());
         }
-        return AjaxResult.ok();
+        return AjaxResult.ok("复制成功");
     }
 
     @GetMapping(value = "/rpaste")
-    public String rcopyr(@RequestParam("username") String _Usrname, HttpServletResponse response)
+    public AjaxResult rpaste(@RequestParam(value = "userid", required = false) String _User_id, HttpServletResponse response)
     {
         try
         {
-            return null == CacheUtils.get(_Usrname) ? "" : CacheUtils.get(_Usrname).toString();
+            if (null == _User_id || _User_id.isEmpty())
+                return AjaxResult.fail("userid不能为空");
+            return AjaxResult.ok( "粘贴成功", null == CacheUtils.get(_User_id) ? "" : CacheUtils.get(_User_id).toString());
         }
         catch (RuntimeException re)
         {
-            return "";
+            log.error("/rpaste接口出现异常,: ", re);
+            String err_msg = "服务器异常, 异常信息: " + re.getMessage();
+            return AjaxResult.fail("粘贴失败");
         }
     }
 
