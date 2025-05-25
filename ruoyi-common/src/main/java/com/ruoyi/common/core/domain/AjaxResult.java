@@ -44,7 +44,7 @@ public class AjaxResult extends HashMap<String, Object>
         FILE_OFFSET_LESS_THAN_ZERO_ERR(509, "文件偏移量不能小于0"),
         FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510, "文件偏移量超过了文件大小");
         private final int value;
-        private String msg;
+        private final String msg;
 
         Type(int value, String _msg)
         {

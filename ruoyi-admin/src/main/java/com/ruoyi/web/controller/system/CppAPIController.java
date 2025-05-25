@@ -144,8 +144,8 @@ public class CppAPIController {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
             raf.close();
-            response.addIntHeader("code",AjaxResult.Type.SUCCESS.value());
-            response.addHeader("msg",AjaxResult.Type.SUCCESS.getMsg());
+            response.addIntHeader("X-Code",AjaxResult.Type.SUCCESS.value());
+            response.addHeader("X-Msg",AjaxResult.Type.SUCCESS.getMsg());
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
             buffops.write(buffer, 0, real_read_len);
@@ -156,21 +156,21 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("code", String.valueOf(e.getType().value()));
-            response.addHeader("msg", e.getMessage());
+            response.addHeader("X-Code", String.valueOf(e.getType().value()));
+            response.addHeader("X-Msg", e.getMessage());
             return AjaxResult.fail(e.getType(), e.getMessage());
         }
         catch (RuntimeException e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
-            response.addHeader("msg", e.getMessage());
+            response.addHeader("X-Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("X-Msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         catch (Exception e) {
             log.error("文件获取失败", e);
-            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
-            response.addHeader("msg", e.getMessage());
+            response.addHeader("X-Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("X-Msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         return AjaxResult.ok("下载成功");
