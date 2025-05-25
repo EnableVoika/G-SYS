@@ -103,32 +103,32 @@ public class CppAPIController {
     {
         try {
             if (null == _Local || _Local.isEmpty()) {
-                throw new ServiceExcept("文件的相对地址不能为空");
+                throw new ServiceExcept("The relative path of the file cannot be empty.");
             }
             if (null == _Usr || _Usr.isEmpty())
             {
-                throw new ServiceExcept(AjaxResult.Type.USER_NOT_EMPTY ,"必须指定用户名");
+                throw new ServiceExcept(AjaxResult.Type.USER_NOT_EMPTY ,AjaxResult.Type.USER_NOT_EMPTY.getMsg());
             }
             if (null == __offset)
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_IS_NULL_ERR ,"文件偏移量不能为空");
+                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_IS_NULL_ERR ,AjaxResult.Type.FILE_OFFSET_IS_NULL_ERR.getMsg());
             }
             if (0 > __offset)
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR ,"文件偏移量不能小于0");
+                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR ,AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR.getMsg());
             }
             // -1 表示文件不存在
             response.addIntHeader("File-Status",AjaxResult.Type.FILE_NOT_EXISTS.value());
             File tmp = new File(savePath + "/" + _Usr + _Local);
             if (!tmp.exists()) {
-                throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS ,"文件不存在");
+                throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS ,AjaxResult.Type.FILE_NOT_EXISTS.getMsg());
             }
             // 文件存在
             response.setIntHeader("File-Status", 0);
             RandomAccessFile raf = new RandomAccessFile(tmp, "r");
             if (__offset > raf.length())
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR ,"偏移量超过了文件大小");
+                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR ,AjaxResult.Type.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR.getMsg());
             }
             response.addHeader("Total-Length",String.valueOf(raf.length()));
             raf.seek(__offset);
@@ -144,8 +144,8 @@ public class CppAPIController {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
             raf.close();
-            response.addIntHeader("X-Code",AjaxResult.Type.SUCCESS.value());
-            response.addHeader("X-Msg",AjaxResult.Type.SUCCESS.getMsg());
+            response.addIntHeader("Code",AjaxResult.Type.SUCCESS.value());
+            response.addHeader("Msg",AjaxResult.Type.SUCCESS.getMsg());
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
             buffops.write(buffer, 0, real_read_len);
@@ -156,21 +156,21 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("X-Code", String.valueOf(e.getType().value()));
-            response.addHeader("X-Msg", e.getMessage());
+            response.addHeader("Code", String.valueOf(e.getType().value()));
+            response.addHeader("Msg", e.getMessage());
             return AjaxResult.fail(e.getType(), e.getMessage());
         }
         catch (RuntimeException e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("X-Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
-            response.addHeader("X-Msg", e.getMessage());
+            response.addHeader("Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("Msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         catch (Exception e) {
             log.error("文件获取失败", e);
-            response.addHeader("X-Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
-            response.addHeader("X-Msg", e.getMessage());
+            response.addHeader("Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("Msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         return AjaxResult.ok("下载成功");
