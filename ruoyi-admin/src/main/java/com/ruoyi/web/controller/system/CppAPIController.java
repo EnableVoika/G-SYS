@@ -144,12 +144,12 @@ public class CppAPIController {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
             raf.close();
+            response.addIntHeader("code",AjaxResult.Type.SUCCESS.value());
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
             buffops.write(buffer, 0, real_read_len);
             buffops.flush();
             buffops.close();
-            response.addHeader("code",Constants.SUCCESS);
             System.gc();
         }
         catch (ServiceExcept e)
