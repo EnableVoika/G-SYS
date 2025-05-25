@@ -103,7 +103,7 @@ public class CppAPIController {
     {
         try {
             if (null == _Local || _Local.isEmpty()) {
-                throw new RuntimeException("文件的相对地址不能为空");
+                throw new ServiceExcept("文件的相对地址不能为空");
             }
             if (null == _Usr || _Usr.isEmpty())
             {
@@ -145,6 +145,7 @@ public class CppAPIController {
             }
             raf.close();
             response.addIntHeader("code",AjaxResult.Type.SUCCESS.value());
+            response.addHeader("msg",AjaxResult.Type.SUCCESS.getMsg());
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
             buffops.write(buffer, 0, real_read_len);
@@ -155,18 +156,21 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("code", String.valueOf(e.getType()));
+            response.addHeader("code", String.valueOf(e.getType().value()));
+            response.addHeader("msg", e.getMessage());
             return AjaxResult.fail(e.getType(), e.getMessage());
         }
         catch (RuntimeException e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL));
+            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         catch (Exception e) {
             log.error("文件获取失败", e);
-            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL));
+            response.addHeader("code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("msg", e.getMessage());
             return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
         }
         return AjaxResult.ok("下载成功");

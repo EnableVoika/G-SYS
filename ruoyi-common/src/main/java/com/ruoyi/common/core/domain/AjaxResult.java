@@ -28,31 +28,38 @@ public class AjaxResult extends HashMap<String, Object>
     public enum Type
     {
         /** 成功 */
-        SUCCESS(0),
+        SUCCESS(0, "成功"),
         /** 警告 */
-        WARN(301),
+        WARN(301, "警告"),
         /** 错误 */
-        ERROR(500),
-        NOT_FOUND_FILE(501),
-        LOST_MOCK_ID(502),
-        MOCK_WRITE_FAIL(503),
-        DEL_FILE_FAIL(504),
-        DOWNLOAD_FAIL(505),
-        FILE_NOT_EXISTS(506),
-        USER_NOT_EMPTY(507),
-        FILE_OFFSET_IS_NULL_ERR(508),
-        FILE_OFFSET_LESS_THAN_ZERO_ERR(509),
-        FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510);
+        ERROR(500, "服务器错误"),
+        NOT_FOUND_FILE(501, "没找到文件"),
+        LOST_MOCK_ID(502, "mock id 丢失"),
+        MOCK_WRITE_FAIL(503, "写入mock文件失败"),
+        DEL_FILE_FAIL(504, "删除文件失败"),
+        DOWNLOAD_FAIL(505, "文件下载失败"),
+        FILE_NOT_EXISTS(506, "文件不存在"),
+        USER_NOT_EMPTY(507, "用户不能为空"),
+        FILE_OFFSET_IS_NULL_ERR(508, "文件流偏移量不能为空"),
+        FILE_OFFSET_LESS_THAN_ZERO_ERR(509, "文件偏移量不能小于0"),
+        FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510, "文件偏移量超过了文件大小");
         private final int value;
+        private String msg;
 
-        Type(int value)
+        Type(int value, String _msg)
         {
             this.value = value;
+            this.msg = _msg;
         }
 
         public int value()
         {
             return this.value;
+        }
+
+        public String getMsg()
+        {
+            return this.msg;
         }
     }
 
