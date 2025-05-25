@@ -117,11 +117,15 @@ public class CppAPIController {
             {
                 throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR ,"文件偏移量不能小于0");
             }
+            // -1 表示文件不存在
+            response.addIntHeader("File-Status",AjaxResult.Type.FILE_NOT_EXISTS.value());
+            response.addIntHeader("code",AjaxResult.Type.ERROR.value());
             File tmp = new File(savePath + "/" + _Usr + _Local);
             if (!tmp.exists()) {
-//                response.sendError(-1,"文件不存在");
                 throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS ,"文件不存在");
             }
+            // 文件存在
+            response.setIntHeader("File-Status", 0);
             RandomAccessFile raf = new RandomAccessFile(tmp, "r");
             if (__offset > raf.length())
             {
@@ -140,6 +144,7 @@ public class CppAPIController {
             {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
+            response.setIntHeader("code",AjaxResult.Type.SUCCESS.value());
             raf.close();
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
