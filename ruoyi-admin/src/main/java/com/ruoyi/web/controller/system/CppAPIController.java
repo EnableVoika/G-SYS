@@ -119,7 +119,6 @@ public class CppAPIController {
             }
             // -1 表示文件不存在
             response.addIntHeader("File-Status",AjaxResult.Type.FILE_NOT_EXISTS.value());
-            response.addIntHeader("code",AjaxResult.Type.ERROR.value());
             File tmp = new File(savePath + "/" + _Usr + _Local);
             if (!tmp.exists()) {
                 throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS ,"文件不存在");
@@ -144,7 +143,6 @@ public class CppAPIController {
             {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
-            response.setIntHeader("code",AjaxResult.Type.SUCCESS.value());
             raf.close();
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
