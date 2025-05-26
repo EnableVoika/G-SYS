@@ -20,7 +20,8 @@ gsys:
 cpp-api:
 #  profile: D:\data\tmp\RcvFile
   profile: /home/iy/RcvPath
-  download-block-size: 10485760
+#  download-block-size: 10485760
+  download-block-size: 20971520
 
 # 开发环境配置
 server:
