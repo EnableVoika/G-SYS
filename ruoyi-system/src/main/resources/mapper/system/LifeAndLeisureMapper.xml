@@ -51,7 +51,7 @@
                 )
             </if>
         </where>
-        order by create_time DESC
+        order by update_time DESC
     </select>
 
     <select id="search_batch" resultMap="ArticleResult">

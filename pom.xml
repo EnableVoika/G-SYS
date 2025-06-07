@@ -259,6 +259,23 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <version>2.4</version>-->
+<!--                <configuration>-->
+<!--                    &lt;!&ndash; 指定打包的jar包输出路径 &ndash;&gt;-->
+<!--                    <outputDirectory>D:\docker_projects\java_projects\g-sys</outputDirectory>-->
+<!--                    &lt;!&ndash;不打入jar包的文件类型或者路径 &ndash;&gt;-->
+<!--                    &lt;!&ndash;                    <excludes>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        <exclude>**/*.properties</exclude>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        <exclude>**/*.xml</exclude>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        <exclude>**/*.yml</exclude>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        <exclude>static/**</exclude>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        <exclude>templates/**</exclude>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                    </excludes>&ndash;&gt;-->
+<!--                </configuration>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
