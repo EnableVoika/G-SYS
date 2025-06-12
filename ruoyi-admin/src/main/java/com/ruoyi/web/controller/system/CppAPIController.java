@@ -2,6 +2,7 @@ package com.ruoyi.web.controller.system;
 
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.CacheUtils;
 import com.ruoyi.framework.web.service.CacheService;
@@ -107,28 +108,28 @@ public class CppAPIController {
             }
             if (null == _Usr || _Usr.isEmpty())
             {
-                throw new ServiceExcept(AjaxResult.Type.USER_NOT_EMPTY ,AjaxResult.Type.USER_NOT_EMPTY.getMsg());
+                throw new ServiceExcept(ErrorCode.USER_NOT_EMPTY ,ErrorCode.USER_NOT_EMPTY.what());
             }
             if (null == __offset)
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_IS_NULL_ERR ,AjaxResult.Type.FILE_OFFSET_IS_NULL_ERR.getMsg());
+                throw new ServiceExcept(ErrorCode.FILE_OFFSET_IS_NULL_ERR ,ErrorCode.FILE_OFFSET_IS_NULL_ERR.what());
             }
             if (0 > __offset)
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR ,AjaxResult.Type.FILE_OFFSET_LESS_THAN_ZERO_ERR.getMsg());
+                throw new ServiceExcept(ErrorCode.FILE_OFFSET_LESS_THAN_ZERO_ERR ,ErrorCode.FILE_OFFSET_LESS_THAN_ZERO_ERR.what());
             }
             // -1 表示文件不存在
-            response.addIntHeader("File-Status",AjaxResult.Type.FILE_NOT_EXISTS.value());
+            response.addIntHeader("File-Status",ErrorCode.FILE_NOT_EXISTS.code());
             File tmp = new File(savePath + "/" + _Usr + _Local);
             if (!tmp.exists()) {
-                throw new ServiceExcept(AjaxResult.Type.FILE_NOT_EXISTS ,AjaxResult.Type.FILE_NOT_EXISTS.getMsg());
+                throw new ServiceExcept(ErrorCode.FILE_NOT_EXISTS ,ErrorCode.FILE_NOT_EXISTS.what());
             }
             // 文件存在
             response.setIntHeader("File-Status", 0);
             RandomAccessFile raf = new RandomAccessFile(tmp, "r");
             if (__offset > raf.length())
             {
-                throw new ServiceExcept(AjaxResult.Type.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR ,AjaxResult.Type.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR.getMsg());
+                throw new ServiceExcept(ErrorCode.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR ,ErrorCode.FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR.what());
             }
             response.addHeader("Total-Length",String.valueOf(raf.length()));
             raf.seek(__offset);
@@ -144,8 +145,8 @@ public class CppAPIController {
                 response.addHeader("Next-Offset",String.valueOf(__offset + real_read_len));
             }
             raf.close();
-            response.addIntHeader("Code",AjaxResult.Type.SUCCESS.value());
-            response.addHeader("Msg",AjaxResult.Type.SUCCESS.getMsg());
+            response.addIntHeader("Code",ErrorCode.SUCCESS.code());
+            response.addHeader("Msg",ErrorCode.SUCCESS.what());
             BufferedOutputStream buffops = new BufferedOutputStream(response.getOutputStream());
 //            ServletOutputStream buffops = response.getOutputStream();
             buffops.write(buffer, 0, real_read_len);
@@ -156,22 +157,22 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("Code", String.valueOf(e.getType().value()));
+            response.addHeader("Code", String.valueOf(e.getType().code()));
             response.addHeader("Msg", e.getMessage());
             return AjaxResult.fail(e.getType(), e.getMessage());
         }
         catch (RuntimeException e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("Code", String.valueOf(ErrorCode.DOWNLOAD_FAIL.code()));
             response.addHeader("Msg", e.getMessage());
-            return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
+            return AjaxResult.fail(ErrorCode.DOWNLOAD_FAIL, e.getMessage());
         }
         catch (Exception e) {
             log.error("文件获取失败", e);
-            response.addHeader("Code", String.valueOf(AjaxResult.Type.DOWNLOAD_FAIL.value()));
+            response.addHeader("Code", String.valueOf(ErrorCode.DOWNLOAD_FAIL.code()));
             response.addHeader("Msg", e.getMessage());
-            return AjaxResult.fail(AjaxResult.Type.DOWNLOAD_FAIL, e.getMessage());
+            return AjaxResult.fail(ErrorCode.DOWNLOAD_FAIL, e.getMessage());
         }
         return AjaxResult.ok("下载成功");
     }
@@ -182,7 +183,7 @@ public class CppAPIController {
         StringBuffer msg = new StringBuffer(32);
         try {
             if (StringUtils.isEmpty(_Usr))
-                throw new ServiceExcept(AjaxResult.Type.USER_NOT_EMPTY,"用户名不能为空");
+                throw new ServiceExcept(ErrorCode.USER_NOT_EMPTY,"用户名不能为空");
 
             StringBuilder bf = new StringBuilder(savePath).append("/").append(_Usr);
             if (StringUtils.isNotEmpty(_Local))
@@ -207,7 +208,7 @@ public class CppAPIController {
         catch (Exception e)
         {
             log.error("未知异常: ",e);
-            return AjaxResult.fail(AjaxResult.Type.DEL_FILE_FAIL,e.getMessage());
+            return AjaxResult.fail(ErrorCode.DEL_FILE_FAIL,e.getMessage());
         }
         return AjaxResult.ok(msg.toString());
     }
@@ -235,7 +236,7 @@ public class CppAPIController {
         try
         {
             if (StringUtils.isEmpty(dto.getMockId()) || StringUtils.isEmpty(dto.getUser()))
-                return AjaxResult.fail(AjaxResult.Type.LOST_MOCK_ID,"必须指定Mock的id和user");
+                return AjaxResult.fail(ErrorCode.LOST_MOCK_ID,"必须指定Mock的id和user");
             dto.setAddition(null == dto.getAddition() ? 0 : dto.getAddition());
             StringBuilder bf = new StringBuilder(savePath);
             bf.append("/").append(dto.getUser()).append(dto.getMockId());
@@ -253,7 +254,7 @@ public class CppAPIController {
         catch (Exception e)
         {
             log.error("写入Mock失败,:",e);
-            return AjaxResult.fail(AjaxResult.Type.MOCK_WRITE_FAIL,"写入Mock失败");
+            return AjaxResult.fail(ErrorCode.MOCK_WRITE_FAIL,"写入Mock失败");
         }
 
     }
@@ -272,7 +273,7 @@ public class CppAPIController {
         try
         {
             if (StringUtils.isEmpty(_Usr) || StringUtils.isEmpty(_MockId))
-                return AjaxResult.fail(AjaxResult.Type.LOST_MOCK_ID,"必须指定Mock的id和user");
+                return AjaxResult.fail(ErrorCode.LOST_MOCK_ID,"必须指定Mock的id和user");
             if (null == _File || _File.isEmpty())
                 return AjaxResult.fail("必须上传文件");
             StringBuilder bf = new StringBuilder(savePath);
@@ -292,7 +293,7 @@ public class CppAPIController {
         catch (Exception e)
         {
             log.error("写入Mock失败,:",e);
-            return AjaxResult.fail(AjaxResult.Type.MOCK_WRITE_FAIL,"写入Mock失败");
+            return AjaxResult.fail(ErrorCode.MOCK_WRITE_FAIL,"写入Mock失败");
         }
 
     }
@@ -303,7 +304,7 @@ public class CppAPIController {
         try
         {
             if (StringUtils.isEmpty(_MockId) || StringUtils.isEmpty(_Usr))
-                return AjaxResult.fail(AjaxResult.Type.LOST_MOCK_ID,"必须指定Mock的id和user");
+                return AjaxResult.fail(ErrorCode.LOST_MOCK_ID,"必须指定Mock的id和user");
             StringBuilder bf = new StringBuilder(savePath);
             bf.append("/").append(_Usr).append(_MockId);
             return AjaxResult.ok("请求成功",cs.read_mock(bf.toString()));
@@ -316,7 +317,7 @@ public class CppAPIController {
         catch (Exception e)
         {
             log.error("读取Mock失败,:",e);
-            return AjaxResult.fail(AjaxResult.Type.MOCK_WRITE_FAIL,"写入Mock失败");
+            return AjaxResult.fail(ErrorCode.MOCK_WRITE_FAIL,"写入Mock失败");
         }
     }
 

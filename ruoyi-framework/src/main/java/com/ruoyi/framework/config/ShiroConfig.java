@@ -302,6 +302,7 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/login", "anon,captchaValidate");
         filterChainDefinitionMap.put("/demo/cpp-api/**", "anon,captchaValidate");
         filterChainDefinitionMap.put("/cpp-api/**", "anon,captchaValidate");
+        filterChainDefinitionMap.put("/file/**", "anon,captchaValidate");
         // 注册相关
         filterChainDefinitionMap.put("/register", "anon,captchaValidate");
         // 系统权限列表

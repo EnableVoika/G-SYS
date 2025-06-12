@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.ruoyi.common.enums.ErrorCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.InitBinder;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.domain.AjaxResult.Type;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -186,7 +186,7 @@ public class BaseController
     /**
      * 返回错误码消息
      */
-    public AjaxResult error(Type type, String message)
+    public AjaxResult error(ErrorCode type, String message)
     {
         return new AjaxResult(type, message);
     }

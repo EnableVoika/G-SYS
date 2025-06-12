@@ -1,6 +1,7 @@
 package com.ruoyi.common.exception;
 
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.ErrorCode;
 
 /**
  * 业务异常
@@ -15,8 +16,9 @@ public final class ServiceExcept extends RuntimeException
     /**
      * 错误提示
      */
-    private String message;
-    private AjaxResult.Type type;
+//    private String message;
+    private ErrorCode type;
+    private int code;
 
     /**
      * 错误明细，内部调试错误
@@ -32,15 +34,23 @@ public final class ServiceExcept extends RuntimeException
     {
     }
 
-    public ServiceExcept(AjaxResult.Type type, String message)
+//    public ServiceExcept(AjaxResult.Type type, String message)
+//    {
+//        super(message);
+//        this.code = type.value();
+////        this.message = message;
+//    }
+
+    public ServiceExcept(ErrorCode _Code, String message)
     {
-        this.type = type;
-        this.message = message;
+        super(message);
+        this.code = _Code.code();
+//        this.message = message;
     }
 
     public ServiceExcept(String message)
     {
-        this.message = message;
+        super(message);
     }
 
     public String getDetailMessage()
@@ -57,20 +67,21 @@ public final class ServiceExcept extends RuntimeException
     @Override
     public String getMessage()
     {
-        return message;
+        return super.getMessage();
     }
 
-    public ServiceExcept setMessage(String message)
-    {
-        this.message = message;
-        return this;
-    }
+//    public ServiceExcept setMessage(String message)
+//    {
+//        ServiceExcept(message);
+//        this.message = message;
+//        return this;
+//    }
 
-    public AjaxResult.Type getType() {
+    public ErrorCode getType() {
         return type;
     }
-
-    public void setType(AjaxResult.Type type) {
-        this.type = type;
-    }
+//
+//    public void setType(AjaxResult.Type type) {
+//        this.type = type;
+//    }
 }

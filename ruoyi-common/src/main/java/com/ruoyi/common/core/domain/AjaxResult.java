@@ -2,6 +2,8 @@ package com.ruoyi.common.core.domain;
 
 import java.util.HashMap;
 import java.util.Objects;
+
+import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.utils.StringUtils;
 
 /**
@@ -23,47 +25,6 @@ public class AjaxResult extends HashMap<String, Object>
     public static final String DATA_TAG = "data";
 
     /**
-     * 状态类型
-     */
-    public enum Type
-    {
-        /** 成功 */
-        SUCCESS(0, "Success"),
-        /** 警告 */
-        WARN(301, "Warning"),
-        /** 错误 */
-        ERROR(500, "Server Error"),
-        NOT_FOUND_FILE(501, "File Not Found"),
-        LOST_MOCK_ID(502, "Mock ID Missing"),
-        MOCK_WRITE_FAIL(503, "Failed to Write Mock File"),
-        DEL_FILE_FAIL(504, "Failed to Delete File"),
-        DOWNLOAD_FAIL(505, "File Download Failed"),
-        FILE_NOT_EXISTS(506, "File Does Not Exist"),
-        USER_NOT_EMPTY(507, "User Cannot Be Empty"),
-        FILE_OFFSET_IS_NULL_ERR(508, "File Offset Cannot Be Null"),
-        FILE_OFFSET_LESS_THAN_ZERO_ERR(509, "File Offset Cannot Be Less Than Zero"),
-        FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510, "File Offset Exceeds File Size");
-        private final int value;
-        private final String msg;
-
-        Type(int value, String _msg)
-        {
-            this.value = value;
-            this.msg = _msg;
-        }
-
-        public int value()
-        {
-            return this.value;
-        }
-
-        public String getMsg()
-        {
-            return this.msg;
-        }
-    }
-
-    /**
      * 初始化一个新创建的 AjaxResult 对象，使其表示一个空消息。
      */
     public AjaxResult()
@@ -73,25 +34,25 @@ public class AjaxResult extends HashMap<String, Object>
     /**
      * 初始化一个新创建的 AjaxResult 对象
      *
-     * @param type 状态类型
+     * @param _Code 状态类型
      * @param msg 返回内容
      */
-    public AjaxResult(Type type, String msg)
+    public AjaxResult(ErrorCode _Code, String msg)
     {
-        super.put(CODE_TAG, type.value);
+        super.put(CODE_TAG, _Code.code());
         super.put(MSG_TAG, msg);
     }
 
     /**
      * 初始化一个新创建的 AjaxResult 对象
      *
-     * @param type 状态类型
+     * @param _Code 状态类型
      * @param msg 返回内容
      * @param data 数据对象
      */
-    public AjaxResult(Type type, String msg, Object data)
+    public AjaxResult(ErrorCode _Code, String msg, Object data)
     {
-        super.put(CODE_TAG, type.value);
+        super.put(CODE_TAG, _Code.code());
         super.put(MSG_TAG, msg);
         if (StringUtils.isNotNull(data))
         {
@@ -139,7 +100,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public static AjaxResult success(String msg, Object data)
     {
-        return new AjaxResult(Type.SUCCESS, msg, data);
+        return new AjaxResult(ErrorCode.SUCCESS, msg, data);
     }
 
     /**
@@ -182,7 +143,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public static AjaxResult ok(String msg, Object data)
     {
-        return new AjaxResult(Type.SUCCESS, msg, data);
+        return new AjaxResult(ErrorCode.SUCCESS, msg, data);
     }
 
     /**
@@ -205,7 +166,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public static AjaxResult warn(String msg, Object data)
     {
-        return new AjaxResult(Type.WARN, msg, data);
+        return new AjaxResult(ErrorCode.WARN, msg, data);
     }
 
     /**
@@ -238,7 +199,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public static AjaxResult error(String msg, Object data)
     {
-        return new AjaxResult(Type.ERROR, msg, data);
+        return new AjaxResult(ErrorCode.ERROR, msg, data);
     }
 
     /**
@@ -271,12 +232,12 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public static AjaxResult fail(String msg, Object data)
     {
-        return new AjaxResult(Type.ERROR, msg, data);
+        return new AjaxResult(ErrorCode.ERROR, msg, data);
     }
 
-    public static AjaxResult fail(Type type, String msg)
+    public static AjaxResult fail(ErrorCode _Code, String msg)
     {
-        return new AjaxResult(type, msg, null);
+        return new AjaxResult(_Code, msg, null);
     }
 
     /**
@@ -286,7 +247,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public boolean isSuccess()
     {
-        return Objects.equals(Type.SUCCESS.value, this.get(CODE_TAG));
+        return Objects.equals(ErrorCode.SUCCESS.code(), this.get(CODE_TAG));
     }
 
     /**
@@ -296,7 +257,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public boolean isWarn()
     {
-        return Objects.equals(Type.WARN.value, this.get(CODE_TAG));
+        return Objects.equals(ErrorCode.WARN.code(), this.get(CODE_TAG));
     }
 
     /**
@@ -306,7 +267,7 @@ public class AjaxResult extends HashMap<String, Object>
      */
     public boolean isError()
     {
-        return Objects.equals(Type.ERROR.value, this.get(CODE_TAG));
+        return Objects.equals(ErrorCode.ERROR.code(), this.get(CODE_TAG));
     }
 
     /**
