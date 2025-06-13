@@ -11,22 +11,42 @@
             cursor: pointer;
         }
 
-        .file-clickable:hover .file-text {
-            color: #1890ff;
-        }
+.file-clickable {
+    display: inline-flex;
+    align-items: center;
+    user-select: none;
+    gap: 6px;
+    cursor: pointer;
+    min-height: 30px;  /* 关键：给一个高度，和字体或图标大小对应 */
+}
 
-        .file-icon {
-            width: 18px;
-            text-align: center;
-            margin-right: 6px;
-        }
+.file-icon {
+    width: 26px;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;     /* 继承父级高度 */
+}
 
-        .file-text {
-            color: inherit;
-            transition: color 0.2s ease;
-            white-space: nowrap;
+.file-icon i {
+    font-size: 22px;
+    line-height: 1;   /* 让icon紧凑 */
+    display: flex;    /* 确保flex对齐 */
+    align-items: center;
+}
 
-        }
+
+.file-text {
+    color: inherit;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    font-size: 16px;        /* 可以稍大一点 */
+    line-height: 1.1;       /* 让基线贴近中间 */
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
 
         .file-text:hover {
             color: #1890ff;
