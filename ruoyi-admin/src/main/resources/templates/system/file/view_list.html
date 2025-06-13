@@ -3,22 +3,17 @@
 <head>
     <th:block th:include="include :: header('表格图片预览')" />
     <style>
-        .file-clickable {
-            display: inline-flex;         /* 不撑满，尺寸刚好包住内部元素 */
-            align-items: center;
-            user-select: none;
-            gap: 6px;                     /* 可选：icon 与文字之间的间距 */
-            cursor: pointer;
-        }
 
-.file-clickable {
+.file-clickable
+{
     display: inline-flex;
     align-items: center;
     user-select: none;
     gap: 6px;
     cursor: pointer;
-    min-height: 30px;  /* 关键：给一个高度，和字体或图标大小对应 */
+    min-height: 30px;  /* 建议30-32px，和icon/font-size协调 */
 }
+
 
 .file-icon {
     width: 26px;
@@ -26,13 +21,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;     /* 继承父级高度 */
+    height: 100%;
 }
-
 .file-icon i {
     font-size: 22px;
-    line-height: 1;   /* 让icon紧凑 */
-    display: flex;    /* 确保flex对齐 */
+    line-height: 1;
+    display: flex;
     align-items: center;
 }
 
@@ -41,11 +35,13 @@
     color: inherit;
     transition: color 0.2s ease;
     white-space: nowrap;
-    font-size: 16px;        /* 可以稍大一点 */
-    line-height: 1.1;       /* 让基线贴近中间 */
+    font-size: 16px;
+    line-height: 1.1;
     display: flex;
     align-items: center;
     height: 100%;
+    position: relative;
+    top: 1.3px;   /* 关键：轻微下移！ */
 }
 
         .file-text:hover {
