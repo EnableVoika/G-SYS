@@ -136,9 +136,15 @@
             text-decoration: underline;
         }
 
-        .breadcrumb-divider {
-            color: #999;
-        }
+.breadcrumb-divider {
+    color: #999;
+    font-weight: bold;      /* 加粗 */
+    font-size: 18px;        /* 字号加大，按实际观感微调 */
+    margin: 0 2px;          /* 微调分隔符间距，可选 */
+    display: flex;          /* 保证垂直居中 */
+    align-items: center;
+}
+
 #breadcrumb-input-prefix {
     position: absolute;
     top: 50%;
@@ -171,27 +177,28 @@
 </head>
 <body class="gray-bg">
 <div class="container-div">
-    <!-- 导航栏 -->
-    <div class="breadcrumb-bar-area">
-        <span id="breadcrumb-back" class="breadcrumb-back">
-            <i class="fa fa-arrow-left"></i>
-        </span>
-        <div class="breadcrumb-wrapper">
-            <div class="breadcrumb-left" id="breadcrumb-left">
-                <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
-                <div id="breadcrumb-input-wrapper" style="display:none; position:relative; width:100%; height:100%;">
-                    <span id="breadcrumb-input-prefix">/</span>
-                    <input id="breadcrumb-input" class="breadcrumb-input" />
-                </div>
-            </div>
-        </div>
-        <span id="breadcrumb-refresh" class="breadcrumb-refresh">
-            <i class="fa fa-rotate-right"></i>
-        </span>
-    </div>
 
 
     <div class="row">
+        <!-- 导航栏 -->
+        <div class="breadcrumb-bar-area">
+        <span id="breadcrumb-back" class="breadcrumb-back">
+            <i class="fa fa-arrow-left"></i>
+        </span>
+            <div class="breadcrumb-wrapper">
+                <div class="breadcrumb-left" id="breadcrumb-left">
+                    <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
+                    <div id="breadcrumb-input-wrapper" style="display:none; position:relative; width:100%; height:100%;">
+                        <span id="breadcrumb-input-prefix">/</span>
+                        <input id="breadcrumb-input" class="breadcrumb-input" />
+                    </div>
+                </div>
+            </div>
+            <span id="breadcrumb-refresh" class="breadcrumb-refresh">
+            <i class="fa fa-rotate-right"></i>
+        </span>
+        </div>
+        <!-- 导航栏结束 -->
         <div class="col-sm-12 select-table table-striped">
             <table id="bootstrap-table"></table>
         </div>
