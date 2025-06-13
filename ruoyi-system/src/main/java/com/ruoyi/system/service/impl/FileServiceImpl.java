@@ -47,17 +47,18 @@ public class FileServiceImpl implements FileService
                 bo.setLastPath(file.getParent());
                 if (file.isDirectory())
                 {
-                    bo.setType(1);
+                    bo.setType(FileTypeUtils.getFileTypeIndex("DIR"));
                     bo.setShortName(file.getName());
                 }
                 else if (file.isFile())
                 {
-                    bo.setType(0);
                     String suffixName = FileTypeUtils.getFileType(file.getName());
                     bo.setSuffix("." + suffixName);
                     bo.setSuffixName(suffixName);
                     bo.setShortName(file.getName().substring(0, file.getName().lastIndexOf(".")));
                     bo.setSize(file.length());
+                    int fileTypeIndex = FileTypeUtils.getFileTypeIndex(suffixName);
+                    bo.setType(fileTypeIndex == -1 ? FileTypeUtils.getFileTypeIndex("FILE") : fileTypeIndex);
                 }
                 _Data.add(bo);
             }

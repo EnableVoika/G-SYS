@@ -1,6 +1,9 @@
 package com.ruoyi.common.utils.file;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -166,5 +169,54 @@ public class FileTypeUtils
             strFileExtendName = "MP4";
         }
         return strFileExtendName;
+    }
+
+    private static final Map<String, Integer> fileTypeIndexMap = new HashMap<String, Integer>() {
+        {
+            // 0: 普通文件
+            put("FILE", 0);
+            // 1: 文件夹
+            put("DIR", 1);
+            put("JPG", 2);
+            put("JPEG", 2);
+            put("GIF", 3);
+            put("PNG", 4);
+            put("BMP", 5);
+            put("ZIP", 6);
+            put("RAR", 7);
+            put("7Z", 8);
+            put("GZ", 9);
+            put("TXT", 10);
+            put("YML", 11);
+            put("YAML", 11);
+            put("DOC", 12);
+            put("DOCX", 13);
+            put("PDF", 14);
+            put("XML", 15);
+            put("MP3", 16);
+            put("MP4", 17);
+            put("WAV", 18);
+            put("FLAC", 19);
+            put("OGG", 20);
+            put("EXE", 21);
+            put("BAT", 22);
+            put("IPA", 23);
+            put("APK", 24);
+            put("CSV", 25);    // 保留25
+            put("JSON", 26);
+            put("HTML", 27);
+            put("PPT", 28);
+            put("PPTX", 29);
+            put("XLS", 30);
+            put("XLSX", 31);
+            put("SVG", 32);
+            put("MDB", 33);
+            put("LOG", 34);
+        }
+    };
+
+    public static int getFileTypeIndex(String _SuffixName)
+    {
+        return fileTypeIndexMap.getOrDefault(_SuffixName.toUpperCase(), -1);
     }
 }

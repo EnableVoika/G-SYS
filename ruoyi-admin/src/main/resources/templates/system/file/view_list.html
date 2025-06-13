@@ -210,6 +210,43 @@
     let pathStack = [
         { name: '根目录', path: '' }
     ];
+    const iconMap = {
+        0:  { icon: 'fa-file',         color: '#666' },      // 普通文件
+        1:  { icon: 'fa-folder',       color: '#f4b400' },   // 文件夹
+        2:  { icon: 'fa-file-image',   color: '#29b6f6' },   // JPG/JPEG
+        3:  { icon: 'fa-file-image',   color: '#28c76f' },   // GIF
+        4:  { icon: 'fa-file-image',   color: '#00bcd4' },   // PNG
+        5:  { icon: 'fa-file-image',   color: '#bca8d8' },   // BMP
+        6:  { icon: 'fa-file-archive', color: '#ff7043' },   // ZIP
+        7:  { icon: 'fa-file-archive', color: '#bf360c' },   // RAR
+        8:  { icon: 'fa-file-archive', color: '#8d6e63' },   // 7Z
+        9:  { icon: 'fa-file-archive', color: '#a1887f' },   // GZ
+        10: { icon: 'fa-file-lines',   color: '#455a64' },   // TXT
+        11: { icon: 'fa-file-lines',   color: '#90caf9' },   // YML/YAML
+        12: { icon: 'fa-file-word',    color: '#1976d2' },   // DOC
+        13: { icon: 'fa-file-word',    color: '#1565c0' },   // DOCX
+        14: { icon: 'fa-file-pdf',     color: '#e53935' },   // PDF
+        15: { icon: 'fa-file-code',    color: '#00bcd4' },   // XML
+        16: { icon: 'fa-file-audio',   color: '#00e676' },   // MP3
+        17: { icon: 'fa-file-video',   color: '#ab47bc' },   // MP4
+        18: { icon: 'fa-file-audio',   color: '#00acc1' },   // WAV
+        19: { icon: 'fa-file-audio',   color: '#00bfae' },   // FLAC
+        20: { icon: 'fa-file-audio',   color: '#ffd600' },   // OGG
+        21: { icon: 'fa-file-alt',   color: '#43a047' },   // EXE（其实可用file-alt更好，但找不到专门的“可执行文件”）
+        22: { icon: 'fa-file-code',    color: '#bdbdbd' },   // BAT
+        23: { icon: 'fa-apple',        color: '#616161' },   // IPA（苹果App包）
+        24: { icon: 'fa-android',      color: '#a4c639' },   // APK
+        25: { icon: 'fa-file-csv',     color: '#8bc34a' },   // CSV
+        26: { icon: 'fa-file-code',    color: '#4caf50' },   // JSON
+        27: { icon: 'fa-file-code',    color: '#ffb300' },   // HTML
+        28: { icon: 'fa-file-powerpoint', color: '#ff7043' }, // PPT
+        29: { icon: 'fa-file-powerpoint', color: '#ff7043' }, // PPTX
+        30: { icon: 'fa-file-excel',   color: '#388e3c' },   // XLS
+        31: { icon: 'fa-file-excel',   color: '#388e3c' },   // XLSX
+        32: { icon: 'fa-file-image',   color: '#607d8b' },   // SVG
+        33: { icon: 'fa-database',     color: '#9c27b0' },   // MDB
+        34: { icon: 'fa-file-lines',   color: '#789262' }    // LOG
+    };
 
     $(function()
     {
@@ -228,15 +265,6 @@
                 field: 'name',
                 title: '文件名',
                 formatter: function(value, row, index) {
-                    const iconMap = {
-                        0: { icon: 'fa-file', color: '#666' },
-                        1: { icon: 'fa-folder', color: '#f4b400' },
-                        2: { icon: 'fa-file-image', color: '#29b6f6' },
-                        3: { icon: 'fa-file-video', color: '#ab47bc' },
-                        4: { icon: 'fa-file-archive', color: '#ff7043' },
-                        5: { icon: 'fa-file-code', color: '#26a69a' },
-                        6: { icon: 'fa-database', color: '#9c27b0' }
-                    };
                     const icon = iconMap[row.type] || iconMap[0];
                     return `
                         <div class="file-clickable" onclick="onFileClick(event, '${encodeURIComponent(row.relativePath)}')">
