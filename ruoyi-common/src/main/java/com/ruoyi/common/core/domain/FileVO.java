@@ -17,8 +17,11 @@ public class FileVO
     // 当前目录
 //    private String currentDirectory;
 
-    // 后缀
+    // 带.后缀
     private String suffix;
+
+    // 不带.的后缀
+    private String suffixName;
 
     // 文件大小
     private long size;
@@ -91,5 +94,13 @@ public class FileVO
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
+    }
+
+    public String getSuffixName() {
+        return suffixName;
+    }
+
+    public void setSuffixName(String suffixName) {
+        this.suffixName = suffixName;
     }
 }

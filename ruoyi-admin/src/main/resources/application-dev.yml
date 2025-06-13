@@ -13,6 +13,7 @@ ruoyi:
   # 获取ip地址开关
   addressEnabled: false
   default_file_path: D:\data\tmp\g-sys\RcvPath
+  custom-folder: CustomFolder
 
 cpp-api:
   profile: D:\data\tmp\g-sys\RcvPath

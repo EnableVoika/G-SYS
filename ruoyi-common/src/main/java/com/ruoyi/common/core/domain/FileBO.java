@@ -14,9 +14,11 @@ public class FileBO
     // 上一级
     private String lastPath;
 
-    // 后缀
+    // 带.后缀
     private String suffix;
 
+    // 不带.的后缀
+    private String suffixName;
     // 文件大小
     private long size;
 
@@ -80,5 +82,13 @@ public class FileBO
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getSuffixName() {
+        return suffixName;
+    }
+
+    public void setSuffixName(String suffixName) {
+        this.suffixName = suffixName;
     }
 }

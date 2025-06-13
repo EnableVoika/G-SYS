@@ -6,6 +6,7 @@ import com.ruoyi.common.core.domain.dto.FileDTO;
 import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.file.FileTypeUtils;
 import com.ruoyi.system.service.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class FileServiceImpl implements FileService
     @Value("${ruoyi.default_file_path}")
     private String defaultFilePath;
 
-    private static void _list(List<FileBO> _Data, String _RootPath, String relativePath)
+    private void _list(List<FileBO> _Data, String _RootPath, String relativePath)
     {
         if (StringUtils.isEmpty(_RootPath))
             throw new ServiceExcept("根路径(_RootPath)不能为空");
@@ -52,14 +53,20 @@ public class FileServiceImpl implements FileService
                 else if (file.isFile())
                 {
                     bo.setType(0);
-                    String suffix = file.getName().substring(file.getName().lastIndexOf("."));
-                    bo.setSuffix(suffix);
+                    String suffixName = FileTypeUtils.getFileType(file.getName());
+                    bo.setSuffix("." + suffixName);
+                    bo.setSuffixName(suffixName);
                     bo.setShortName(file.getName().substring(0, file.getName().lastIndexOf(".")));
                     bo.setSize(file.length());
                 }
                 _Data.add(bo);
             }
         }
+    }
+
+    private void setFileType(FileBO _FileBO)
+    {
+
     }
 
     @Override
@@ -76,6 +83,7 @@ public class FileServiceImpl implements FileService
             fileVO.setSize(fileBO.getSize());
             fileVO.setType(fileBO.getType());
             fileVO.setSuffix(fileBO.getSuffix());
+            fileVO.setSuffixName(fileBO.getSuffixName());
 
             fileVO.setRelativePath(fileBO.getFullName().replace(_RootPath, ""));
             fileVO.setLastPath(fileBO.getLastPath().replace(_RootPath, ""));
