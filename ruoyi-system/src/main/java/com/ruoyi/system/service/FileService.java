@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface FileService
 {
-    List<FileVO> list(FileDTO dto);
+    List<FileVO> list(String _FullPath, String relativePath);
 }

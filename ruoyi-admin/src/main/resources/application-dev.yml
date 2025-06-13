@@ -12,10 +12,10 @@ ruoyi:
   profile: D:\data\tmp\g-sys\RcvPath\gsys
   # 获取ip地址开关
   addressEnabled: false
-  default_file_path: D:\data\tmp\g-sys\RcvPath\files
+  default_file_path: D:\data\tmp\g-sys\RcvPath
 
 cpp-api:
-  profile: D:\data\tmp\g-sys\RcvPath\files
+  profile: D:\data\tmp\g-sys\RcvPath
 #  download-block-size: 10485760
   download-block-size: 20971520
 

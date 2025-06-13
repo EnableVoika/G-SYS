@@ -3,19 +3,193 @@
 <head>
     <th:block th:include="include :: header('表格图片预览')" />
     <style>
-        .file-name-link {
-            color: inherit;
+        .file-clickable {
+            display: inline-flex;         /* 不撑满，尺寸刚好包住内部元素 */
+            align-items: center;
+            user-select: none;
+            gap: 6px;                     /* 可选：icon 与文字之间的间距 */
             cursor: pointer;
-            text-decoration: underline dotted;
+        }
+
+        .file-clickable:hover .file-text {
+            color: #1890ff;
+        }
+
+        .file-icon {
+            width: 18px;
+            text-align: center;
+            margin-right: 6px;
+        }
+
+        .file-text {
+            color: inherit;
             transition: color 0.2s ease;
+            white-space: nowrap;
+
         }
-        .file-name-link:hover {
-            color: #1890ff; /* 蓝色 */
+
+        .file-text:hover {
+            color: #1890ff;
         }
+
+        .table-hover > tbody > tr:hover {
+            background-color: #f2f8f7 !important;
+        }
+
+
+.breadcrumb-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-right: none;
+    font-size: 14px;
+    white-space: nowrap;
+    gap: 8px;
+    width: 60vw;
+    min-width: 500px;
+    max-width: 1100px;
+    box-sizing: border-box;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 0;
+}
+
+
+.breadcrumb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    flex: 1;
+}
+
+
+
+.breadcrumb-bar-area {
+    display: flex;
+    align-items: stretch;
+}
+
+.breadcrumb-back,
+.breadcrumb-refresh {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 18px;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    color: #333;
+    cursor: pointer;
+}
+
+.breadcrumb-back {
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    position: relative;
+    right: 1px;
+}
+
+.breadcrumb-refresh {
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    position: relative;
+    left: 1px;
+}
+
+.breadcrumb-segment:first-child {
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+}
+
+/* 如果需要“鼠标悬停按钮有底色”，可加 */
+.breadcrumb-back:hover, .breadcrumb-refresh:hover {
+    background: #e6e6e6;
+}
+
+        .breadcrumb-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumb-segment {
+            color: #1890ff;
+            cursor: pointer;
+
+
+            /* 加上这些行 */
+            max-width: 120px;         /* 设置最大宽度，避免太长撑破 */
+            overflow: hidden;         /* 溢出隐藏 */
+            text-overflow: ellipsis;  /* 超出显示省略号 */
+            white-space: nowrap;      /* 不换行 */
+        }
+        .breadcrumb-segment:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-divider {
+            color: #999;
+        }
+#breadcrumb-input-prefix {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.breadcrumb-input {
+    width: 100%;
+    height: 48px;       /* 必须和 .breadcrumb-wrapper 的高度一样 */
+    font-size: 14px;
+    padding: 4px 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding-left: 20px !important;
+    background: #f5f5f5;
+}
+#breadcrumb-input-wrapper {
+    width: 100%;
+    height: 48px;
+    position: relative;
+}
+
     </style>
+    <link href="/css/all.min.css" rel="stylesheet">
 </head>
 <body class="gray-bg">
 <div class="container-div">
+    <!-- 导航栏 -->
+    <div class="breadcrumb-bar-area">
+        <span id="breadcrumb-back" class="breadcrumb-back">
+            <i class="fa fa-arrow-left"></i>
+        </span>
+        <div class="breadcrumb-wrapper">
+            <div class="breadcrumb-left" id="breadcrumb-left">
+                <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
+                <div id="breadcrumb-input-wrapper" style="display:none; position:relative; width:100%; height:100%;">
+                    <span id="breadcrumb-input-prefix">/</span>
+                    <input id="breadcrumb-input" class="breadcrumb-input" />
+                </div>
+            </div>
+        </div>
+        <span id="breadcrumb-refresh" class="breadcrumb-refresh">
+            <i class="fa fa-rotate-right"></i>
+        </span>
+    </div>
+
+
     <div class="row">
         <div class="col-sm-12 select-table table-striped">
             <table id="bootstrap-table"></table>
@@ -25,33 +199,46 @@
 <div th:include="include :: footer"></div>
 <script th:inline="javascript">
     var prefix = ctx + "system/file";
+    let pathStack = [
+        { name: '根目录', path: '' }
+    ];
 
-    $(function() {
+    $(function()
+    {
         var options = {
             url: prefix + "/list",
             showSearch: false,
             showRefresh: false,
             showToggle: false,
             showColumns: false,
+            clickToSelect: true,
             columns: [{
                 checkbox: true
             },
             {
+                field: 'name',
+                title: '文件名',
                 formatter: function(value, row, index) {
-                    // 图片预览（注意：如存储在本地直接获取数据库路径，如有配置context-path需要使用ctx+路径）
-                    // 如：/profile/upload/2019/08/08/3b7a839aced67397bac694d77611ce72.png
-                    if(index % 2 == 0){
-                        return $.table.imageView('http://demo.ruoyi.vip/img/profile.jpg');
-                    }else {
-                        return $.table.imageView('http://demo.ruoyi.vip/ruoyi.png');
-                    }
-                }
-            },
-            {
-                field : 'name',
-                title : '文件名',
-                formatter: function(value, row, index) {
-                    return `<span class="file-name-link" data-id="${row.id}" onclick="onFileNameClick('${row.id}')">${value}</span>`;
+                    const iconMap = {
+                        0: { icon: 'fa-file', color: '#666' },
+                        1: { icon: 'fa-folder', color: '#f4b400' },
+                        2: { icon: 'fa-file-image', color: '#29b6f6' },
+                        3: { icon: 'fa-file-video', color: '#ab47bc' },
+                        4: { icon: 'fa-file-archive', color: '#ff7043' },
+                        5: { icon: 'fa-file-code', color: '#26a69a' },
+                        6: { icon: 'fa-database', color: '#9c27b0' }
+                    };
+                    const icon = iconMap[row.type] || iconMap[0];
+                    return `
+                        <div class="file-clickable" onclick="onFileClick(event, '${encodeURIComponent(row.relativePath)}')">
+                            <div class="file-icon">
+                                <i class="fa ${icon.icon}" style="color: ${icon.color};"></i>
+                            </div>
+                            <div class="file-text">
+                                ${value}
+                            </div>
+                        </div>
+                    `;
                 }
             },
             {
@@ -90,7 +277,187 @@
             }]
         };
         $.table.init(options);
+        updateBreadcrumbBar();
     });
+
+        function onFileClick(event, relativePath)
+        {
+            event.stopPropagation(); // 阻止选中行
+            relativePath = decodeURIComponent(relativePath);
+            console.log("点击文件：", relativePath);
+            get_list(relativePath);
+        }
+
+        function get_list(relativePath)
+        {
+            $.post({
+                url: prefix + "/list",
+                data: { path: relativePath },
+                success: function(res) {
+                    if(res.code === 0)
+                    {
+                        $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
+                        setPathFromString(relativePath);
+                    }
+                    console.log(res);
+                },
+                error: function(err) {
+                    console.error("请求失败：", err);
+                }
+            });
+        }
+
+// 更新路径栏展示
+function updateBreadcrumbBar() {
+    const container = document.getElementById('breadcrumb-bar');
+    container.innerHTML = '';
+
+    const maxVisible = 15; // 最多显示几个末尾路径
+    const hiddenCount = pathStack.length - maxVisible;
+
+    const renderSegment = (segment, index) => {
+        const partDiv = document.createElement('div');
+        partDiv.className = 'breadcrumb-segment';
+        partDiv.textContent = segment.name;
+
+        partDiv.onclick = (e) => {
+            e.stopPropagation();
+            pathStack = pathStack.slice(0, index + 1);
+            updateBreadcrumbBar();
+            get_list(segment.path);
+        };
+
+        container.appendChild(partDiv);
+
+        if (index < pathStack.length - 1) {
+            const divider = document.createElement('div');
+            divider.className = 'breadcrumb-divider';
+            divider.textContent = '>';
+            divider.onclick = (e) => e.stopPropagation();
+            container.appendChild(divider);
+        }
+    };
+
+    if (hiddenCount > 0) {
+        const ellipsis = document.createElement('div');
+        ellipsis.className = 'breadcrumb-segment';
+        ellipsis.textContent = '«';
+        ellipsis.onclick = () => {
+            updateBreadcrumbBarFull();
+        };
+        container.appendChild(ellipsis);  // 只保留 «，不要多余分隔符
+    }
+
+    const visibleSegments = pathStack.slice(-maxVisible);
+    const baseIndex = pathStack.length - visibleSegments.length;
+    visibleSegments.forEach((seg, i) => {
+        renderSegment(seg, baseIndex + i);
+    });
+}
+function updateBreadcrumbBarFull() {
+    const container = document.getElementById('breadcrumb-bar');
+    container.innerHTML = '';
+
+    pathStack.forEach((segment, index) => {
+        const partDiv = document.createElement('div');
+        partDiv.className = 'breadcrumb-segment';
+        partDiv.textContent = segment.name;
+
+        partDiv.onclick = (e) => {
+            e.stopPropagation();
+            pathStack = pathStack.slice(0, index + 1);
+            updateBreadcrumbBar();
+            get_list(segment.path);
+        };
+
+        container.appendChild(partDiv);
+
+        if (index < pathStack.length - 1) {
+            const divider = document.createElement('div');
+            divider.className = 'breadcrumb-divider';
+            divider.textContent = '>';
+            divider.onclick = (e) => e.stopPropagation();
+            container.appendChild(divider);
+        }
+    });
+}
+
+
+// 解析路径字符串并更新 pathStack
+function setPathFromString(fullPath) {
+    // 替换所有反斜杠为正斜杠（防止平台兼容问题）
+    const normalizedPath = fullPath.replace(/\\/g, '/');
+    const parts = normalizedPath.split('/').filter(part => part !== '');
+
+    pathStack = [];
+
+    let cumulativePath = '';
+    pathStack.push({ name: '根目录', path: '' }); // 根路径
+
+    for (let i = 0; i < parts.length; i++) {
+        cumulativePath += (cumulativePath ? '/' : '') + parts[i];
+        pathStack.push({ name: parts[i], path: cumulativePath });
+    }
+
+    updateBreadcrumbBar();
+}
+
+document.getElementById('breadcrumb-back').onclick = () => {
+    if (pathStack.length > 1) {
+        pathStack.pop();
+        updateBreadcrumbBar();
+        const last = pathStack[pathStack.length - 1];
+        get_list(last.path);
+    }
+};
+document.getElementById('breadcrumb-refresh').onclick = () => {
+    const last = pathStack[pathStack.length - 1];
+    get_list(last.path); // 重新请求当前路径
+};
+
+
+
+document.querySelector('.breadcrumb-wrapper').addEventListener('click', function(e) {
+    const isSegment = e.target.classList.contains('breadcrumb-segment');
+    const isDivider = e.target.classList.contains('breadcrumb-divider');
+    const isInput = e.target.classList.contains('breadcrumb-input');
+    if (!isSegment && !isDivider && !isInput) {
+        enterEditMode();
+    }
+});
+
+
+function enterEditMode() {
+    document.getElementById('breadcrumb-bar').style.display = 'none';
+    document.getElementById('breadcrumb-input-wrapper').style.display = 'block';
+    // 初始化输入内容
+    let path = pathStack[pathStack.length - 1].path || '';
+    document.getElementById('breadcrumb-input').value = path.replace(/^\//, '');
+    document.getElementById('breadcrumb-input').focus();
+}
+
+// 取消输入或回车
+function exitEditMode() {
+    document.getElementById('breadcrumb-bar').style.display = 'flex';
+    document.getElementById('breadcrumb-input-wrapper').style.display = 'none';
+}
+
+// 绑定输入框事件
+document.getElementById('breadcrumb-input').onkeydown = function(e) {
+    if (e.key === 'Enter') {
+        let rawPath = this.value.trim();
+        if (rawPath.startsWith('/')) rawPath = rawPath.substring(1);
+        exitEditMode();
+        get_list(rawPath);
+    } else if (e.key === 'Escape') {
+        exitEditMode();
+    }
+};
+document.getElementById('breadcrumb-input').onblur = function() {
+    exitEditMode();
+};
+
+
 </script>
 </body>
 </html>

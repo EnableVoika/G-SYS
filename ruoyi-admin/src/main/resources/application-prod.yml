@@ -11,12 +11,12 @@ ruoyi:
   profile: /home/iy/RcvPath/gsys
   # 获取ip地址开关
   addressEnabled: false
-  default_file_path: /home/iy/RcvPath/files
+  default_file_path: /home/iy/RcvPath/CustomFolder
 
 gsys:
   profile: ${ruoyi.profile}
 cpp-api:
-  profile: /home/iy/RcvPath/files
+  profile: /home/iy/RcvPath/CustomFolder
 #  download-block-size: 10485760
   download-block-size: 20971520
 

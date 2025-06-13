@@ -1,6 +1,6 @@
 package com.ruoyi.common.core.domain;
 
-public class FileVO
+public class FileBO
 {
     // 包含后缀的名字
     private String name;
@@ -8,14 +8,11 @@ public class FileVO
     // 不包含后缀的文件名
     private String shortName;
 
-    // 相对路径
-    private String relativePath;
+    // 全名（完整路径那种, 包括后缀）
+    private String fullName;
 
     // 上一级
     private String lastPath;
-
-    // 当前目录
-//    private String currentDirectory;
 
     // 后缀
     private String suffix;
@@ -26,7 +23,7 @@ public class FileVO
     // 权限
 //    private String permission;
 
-    // 文件还是文件夹 0=文件 1=文件夹
+    // 文件还是文件夹 0=普通文件 1=文件夹
     private int type;
 
     public String getName() {
@@ -43,6 +40,14 @@ public class FileVO
 
     public void setShortName(String shortName) {
         this.shortName = shortName;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getLastPath() {
@@ -69,27 +74,11 @@ public class FileVO
         this.size = size;
     }
 
-//    public String getPermission() {
-//        return permission;
-//    }
-//
-//    public void setPermission(String permission) {
-//        this.permission = permission;
-//    }
-
     public int getType() {
         return type;
     }
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public String getRelativePath() {
-        return relativePath;
-    }
-
-    public void setRelativePath(String relativePath) {
-        this.relativePath = relativePath;
     }
 }

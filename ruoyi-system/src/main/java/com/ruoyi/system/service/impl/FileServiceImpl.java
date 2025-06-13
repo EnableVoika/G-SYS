@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import com.ruoyi.common.core.domain.FileBO;
 import com.ruoyi.common.core.domain.FileVO;
 import com.ruoyi.common.core.domain.dto.FileDTO;
 import com.ruoyi.common.enums.ErrorCode;
@@ -19,53 +20,66 @@ public class FileServiceImpl implements FileService
     @Value("${ruoyi.default_file_path}")
     private String defaultFilePath;
 
-    @Override
-    public List<FileVO> list(FileDTO dto)
+    private static void _list(List<FileBO> _Data, String _RootPath, String relativePath)
     {
-        String _RootPath = dto.getPath();
         if (StringUtils.isEmpty(_RootPath))
             throw new ServiceExcept("根路径(_RootPath)不能为空");
-        File directory = new File(_RootPath);
+        if (null == relativePath)
+            relativePath = "";
+        File directory = new File(_RootPath, relativePath);
         if (!directory.exists())
         {
-            throw new ServiceExcept(ErrorCode.FILE_NOT_EXISTS,_RootPath + "不存在");
+            throw new ServiceExcept(ErrorCode.FILE_NOT_EXISTS,relativePath + "不存在");
         }
         if (directory.isFile())
         {
             throw new ServiceExcept(ErrorCode.NOT_A_DIR, "不是一个文件夹");
         }
-        String lastPath = "";
-        if (_RootPath.equals(defaultFilePath))
-            lastPath = defaultFilePath;
-        else
-            lastPath = new File(_RootPath).getParent();
         File[] files = directory.listFiles();
-        List<FileVO> data = new ArrayList<>();
         if (files != null)
         {
             for (File file : files)
             {
-                FileVO vo = new FileVO();
-                vo.setName(file.getName());
-                vo.setFullName(file.getPath());
-//                vo.setPath(file.getPath());
-                vo.setLastPath(lastPath);
+                FileBO bo = new FileBO();
+                bo.setName(file.getName());
+                bo.setFullName(file.getAbsolutePath());
+                bo.setLastPath(file.getParent());
                 if (file.isDirectory())
                 {
-                    vo.setType(1);
-                    vo.setShortName(file.getName());
+                    bo.setType(1);
+                    bo.setShortName(file.getName());
                 }
                 else if (file.isFile())
                 {
-                    vo.setType(0);
+                    bo.setType(0);
                     String suffix = file.getName().substring(file.getName().lastIndexOf("."));
-                    vo.setSuffix(suffix);
-                    vo.setShortName(file.getName().substring(0, file.getName().lastIndexOf(".")));
-                    vo.setSize(file.length());
+                    bo.setSuffix(suffix);
+                    bo.setShortName(file.getName().substring(0, file.getName().lastIndexOf(".")));
+                    bo.setSize(file.length());
                 }
-                vo.setCurrentPath(_RootPath);
-                data.add(vo);
+                _Data.add(bo);
             }
+        }
+    }
+
+    @Override
+    public List<FileVO> list(String _RootPath, String relativePath)
+    {
+        List<FileBO> boList = new ArrayList<>();
+        List<FileVO> data = new ArrayList<>();
+        _list(boList, _RootPath, relativePath);
+        for (FileBO fileBO : boList)
+        {
+            FileVO fileVO = new FileVO();
+            fileVO.setName(fileBO.getName());
+            fileVO.setShortName(fileBO.getShortName());
+            fileVO.setSize(fileBO.getSize());
+            fileVO.setType(fileBO.getType());
+            fileVO.setSuffix(fileBO.getSuffix());
+
+            fileVO.setRelativePath(fileBO.getFullName().replace(_RootPath, ""));
+            fileVO.setLastPath(fileBO.getLastPath().replace(_RootPath, ""));
+            data.add(fileVO);
         }
         return data;
     }
