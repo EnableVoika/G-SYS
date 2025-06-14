@@ -18,7 +18,8 @@ public enum ErrorCode
     FILE_OFFSET_IS_NULL_ERR(508, "File Offset Cannot Be Null"),
     FILE_OFFSET_LESS_THAN_ZERO_ERR(509, "File Offset Cannot Be Less Than Zero"),
     FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510, "File Offset Exceeds File Size"),
-    NOT_A_DIR(511, "Is not a directory");
+    NOT_A_DIR(511, "Is not a directory"),
+    FILE_OR_DIR_HAS_EXISTS(512, "file or directory has exists");
     private final int code;
     private final String msg;
 

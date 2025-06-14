@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface FileService
 {
-    List<FileVO> list(String _FullPath, String relativePath);
+    List<FileVO> list(String _RootPath, String relativePath);
+
+    void mkdirs(String _RootPath, String relativePath);
 }

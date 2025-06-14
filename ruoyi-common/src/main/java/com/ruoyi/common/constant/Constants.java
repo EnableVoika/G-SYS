@@ -129,4 +129,6 @@ public class Constants
 
     public static final String CAN_ACCESS_R18_ROLE_DICT_NAME = "can_access_r18_role";
 
+    public static final Long ADMIN_USER_ID = 1L;
+
 }

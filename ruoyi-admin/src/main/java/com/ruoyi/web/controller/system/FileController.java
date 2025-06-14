@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.FileVO;
@@ -64,6 +65,64 @@ public class FileController extends BaseController
 //    }
 
     /**
+     * 末尾不带 "/"
+     * @param _Dest
+     */
+    private void getUserHome(StringBuffer _Dest)
+    {
+        long userId = getUserId();
+        if (Constants.ADMIN_USER_ID.equals(userId))
+        {
+            _Dest.append(defaultFilePath);
+            return;
+        }
+        _Dest.append(defaultFilePath).append("/").append(customFolderConfig).append("/").append(userId);
+    }
+
+    private String getUserHome()
+    {
+        long userId = getUserId();
+        if (Constants.ADMIN_USER_ID.equals(userId))
+            return defaultFilePath;
+        return defaultFilePath + "/" + customFolderConfig + "/" + userId;
+    }
+
+    private String getUserHome(Long _UserId)
+    {
+        if (Constants.ADMIN_USER_ID.equals(_UserId))
+            return defaultFilePath;
+        return defaultFilePath + "/" + customFolderConfig + "/" + _UserId;
+    }
+
+    private String check_access_path(String _UserHome, String _AccessPath, boolean _Throw) throws IOException {
+        long userId = getUserId();
+        if (Constants.ADMIN_USER_ID.equals(userId))
+        {
+            return _AccessPath;
+        }
+        File userSpace = new File(_UserHome);
+        File baseDir = userSpace.getAbsoluteFile(); // 你的根路径
+        File userToAccessFile = new File(baseDir, _AccessPath == null ? "" : _AccessPath);
+        String canonicalBase = baseDir.getCanonicalPath();
+        String canonicalUserFile = userToAccessFile.getCanonicalPath();
+        if (_Throw)
+        {
+            throw new ServiceExcept("非法访问");
+        }
+        if (!canonicalUserFile.startsWith(canonicalBase))
+        {
+            // 目录越界，强行拉回用户根目录
+            return "";
+        }
+        return _AccessPath;
+    }
+    private String check_access_path(File userSpace, String _AccessPath, boolean _Throw) throws IOException
+    {
+        return check_access_path(userSpace.getCanonicalPath(), _AccessPath, _Throw);
+    }
+
+
+    /**
      * 获取文件列表
      * @param dto
      * @return
@@ -75,32 +134,57 @@ public class FileController extends BaseController
         if (StringUtils.isNotEmpty(dto.getPath()))
             dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
         long userId = ShiroUtils.getUserId();
+        String userHome = getUserHome(userId);
         // admin不走用户逻辑
-        if (1 == userId)
+        if (Constants.ADMIN_USER_ID.equals(userId))
         {
-            List<FileVO> data = fileService.list(defaultFilePath, dto.getPath());
+            List<FileVO> data = fileService.list(userHome, dto.getPath());
             return getDataTable(data);
         }
         // 如果是非管理员进来，那么只允许他们看各自的空间
-        String relativeCustomFolder = defaultFilePath + "/" + customFolderConfig;
-        File userSpace = new File(relativeCustomFolder, String.valueOf(userId));
+//        String customFolderPath = defaultFilePath + "/" + customFolderConfig;
+        File userSpace = new File(userHome);
         if (!userSpace.exists())
         {
             if (!userSpace.mkdirs())
                 throw new ServiceExcept("创建用户空间失败");
+            List<FileVO> data = fileService.list(userSpace.getAbsolutePath(), "");
+            return getDataTable(data, ErrorCode.SUCCESS.what());
         }
 
-        File baseDir = userSpace.getAbsoluteFile(); // 你的根路径
-        File userToAccessFile = new File(baseDir, dto.getPath() == null ? "" : dto.getPath());
-        String canonicalBase = baseDir.getCanonicalPath();
-        String canonicalUserFile = userToAccessFile.getCanonicalPath();
-        if (!canonicalUserFile.startsWith(canonicalBase)) {
-            // 目录越界，强行拉回用户根目录
-            dto.setPath("");
-        }
-
+        dto.setPath(check_access_path(userSpace, dto.getPath(), false));
         List<FileVO> data = fileService.list(userSpace.getAbsolutePath(), dto.getPath());
         return getDataTable(data, ErrorCode.SUCCESS.what());
+    }
+
+    @PostMapping("/mkdirs")
+    @ResponseBody
+    @RequiresPermissions("system:file:add")
+    public AjaxResult mkdirs(FileDTO dto) throws IOException {
+        if (StringUtils.isNotEmpty(dto.getPath()))
+            dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
+        Long userId = getUserId();
+        String userHome = getUserHome(userId);
+        if (Constants.ADMIN_USER_ID.equals(userId))
+        {
+            fileService.mkdirs(userHome, dto.getPath());
+            return AjaxResult.ok("创建成功");
+        }
+        String accessPath = check_access_path(userHome, dto.getPath(), true);
+        fileService.mkdirs(userHome, accessPath);
+        return AjaxResult.ok("创建成功");
+    }
+
+    /**
+     * 这个接口只会让文件移动到回收站
+     * 先给用户创建回收站(Trash)
+     * @param dto
+     * @return
+     */
+    @DeleteMapping("/remove")
+    public AjaxResult remove(FileDTO dto)
+    {
+        return AjaxResult.ok();
     }
 
 }

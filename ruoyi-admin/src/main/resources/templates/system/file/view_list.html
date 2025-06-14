@@ -326,7 +326,7 @@
                         </li>
                         <li>
                             <a href="javascript:;" onclick="createEmptyFile()">
-                                <i class="fa fa-file"></i> 新建空白文件
+                                <i class="fa fa-file"></i> 新建文件
                             </a>
                         </li>
                         <li>
@@ -358,6 +358,7 @@
 <div th:include="include :: footer"></div>
 <script th:inline="javascript">
     var prefix = ctx + "system/file";
+    let isCreatingFolder = false;
     let pathStack = [
         { name: '根目录', path: '' }
     ];
@@ -416,6 +417,25 @@
                 field: 'name',
                 title: '文件名',
                 formatter: function(value, row, index) {
+                    // 新建目录的临时行
+                    if (row.isNewFolder) {
+                        return `
+                            <div class="file-clickable">
+                                <div class="file-icon">
+                                    <i class="fa fa-folder" style="color: #f4b400;"></i>
+                                </div>
+                                <div class="file-text">
+                                    <input type="text" id="new-folder-input" class="form-control input-sm" value="新建文件夹" style="width:150px;display:inline;"
+                                        onkeydown="onNewFolderInputKey(event, this)"
+                                        onblur="onNewFolderInputBlur(this)"
+                                        maxlength="64"
+                                        autofocus
+                                    />
+                                </div>
+                            </div>
+                        `;
+                    }
+                    // 正常文件/文件夹
                     const icon = iconMap[row.type] || iconMap[0];
                     return `
                         <div class="file-clickable" onclick="onFileClick(event, '${encodeURIComponent(row.relativePath)}')">
@@ -652,9 +672,69 @@
 
 // 新建下拉框部分逻辑
 function createNewFolder() {
-    console.log("点击新建目录");
-    // 调用插入输入框的逻辑
+    if (isCreatingFolder) return; // 防止多次
+    isCreatingFolder = true;
+
+    // 获取表格数据
+    var data = $('#bootstrap-table').bootstrapTable('getData');
+    // 插入临时行
+    data.push({ isNewFolder: true });
+    $('#bootstrap-table').bootstrapTable('load', data);
+
+    setTimeout(function() {
+        $('#new-folder-input').focus();
+        $('#new-folder-input')[0].select();
+    }, 100); // 保证渲染完
 }
+
+function onNewFolderInputKey(e, input) {
+    if (e.key === 'Enter') {
+        createFolderRequest(input.value.trim());
+    } else if (e.key === 'Escape') {
+        cancelCreateNewFolder();
+    }
+}
+
+function onNewFolderInputBlur(input) {
+    createFolderRequest(input.value.trim());
+}
+
+function createFolderRequest(folderName) {
+    if (!isCreatingFolder) return;
+    isCreatingFolder = false;
+    if (!folderName) {
+        cancelCreateNewFolder();
+        return;
+    }
+    // 发送请求
+    $.post({
+        url: prefix + "/mkdirs",
+        data: {
+            path: pathStack[pathStack.length-1].path + folderName, // 当前路径
+            name: folderName
+        },
+        success: function(res) {
+            if (res.code === 0) {
+                get_list(pathStack[pathStack.length-1].path); // 刷新
+            } else {
+                $.modal.alertError(res.msg || '创建失败');
+                cancelCreateNewFolder();
+            }
+        },
+        error: function() {
+            $.modal.alertError('网络异常');
+            cancelCreateNewFolder();
+        }
+    });
+}
+function cancelCreateNewFolder() {
+    isCreatingFolder = false;
+    // 删除临时行
+    var data = $('#bootstrap-table').bootstrapTable('getData');
+    data = data.filter(row => !row.isNewFolder);
+    $('#bootstrap-table').bootstrapTable('load', data);
+}
+
 
 function createEmptyFile() {
     console.log("点击新建空白文件");
