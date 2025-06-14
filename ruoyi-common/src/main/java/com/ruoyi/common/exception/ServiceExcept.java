@@ -34,18 +34,10 @@ public final class ServiceExcept extends RuntimeException
     {
     }
 
-//    public ServiceExcept(AjaxResult.Type type, String message)
-//    {
-//        super(message);
-//        this.code = type.value();
-////        this.message = message;
-//    }
-
     public ServiceExcept(ErrorCode _Code, String message)
     {
         super(message);
         this.code = _Code.code();
-//        this.message = message;
     }
 
     public ServiceExcept(String message)
@@ -69,22 +61,6 @@ public final class ServiceExcept extends RuntimeException
     {
         return super.getMessage();
     }
-
-//    public ServiceExcept setMessage(String message)
-//    {
-//        ServiceExcept(message);
-//        this.message = message;
-//        return this;
-//    }
-
-//    public ErrorCode getType() {
-//        return type;
-//    }
-//
-//    public void setType(AjaxResult.Type type) {
-//        this.type = type;
-//    }
-
 
     public int getCode() {
         return code;
