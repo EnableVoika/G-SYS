@@ -92,7 +92,13 @@ public class FileServiceImpl implements FileService
     {
         File folder = new File(_RootPath, relativePath);
         if (folder.exists())
-            throw new ServiceExcept(ErrorCode.FILE_OR_DIR_HAS_EXISTS, "文件夹已经存在");
+        {
+            String errMsg = "文件夹“";
+            if (relativePath.startsWith("/") || relativePath.startsWith("\\"))
+                relativePath = relativePath.substring(1);
+            errMsg = errMsg + relativePath + "”已经存在";
+            throw new ServiceExcept(ErrorCode.FILE_OR_DIR_HAS_EXISTS, errMsg);
+        }
         if (!folder.mkdirs())
             throw new ServiceExcept(ErrorCode.ERROR, "文件夹创建失败");
     }
