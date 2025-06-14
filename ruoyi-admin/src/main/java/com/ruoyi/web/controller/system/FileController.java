@@ -105,12 +105,10 @@ public class FileController extends BaseController
         File userToAccessFile = new File(baseDir, _AccessPath == null ? "" : _AccessPath);
         String canonicalBase = baseDir.getCanonicalPath();
         String canonicalUserFile = userToAccessFile.getCanonicalPath();
-        if (_Throw)
-        {
-            throw new ServiceExcept("非法访问");
-        }
         if (!canonicalUserFile.startsWith(canonicalBase))
         {
+            if (_Throw)
+                throw new ServiceExcept("非法访问");
             // 目录越界，强行拉回用户根目录
             return "";
         }

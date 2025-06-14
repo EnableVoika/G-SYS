@@ -699,10 +699,24 @@ function onNewFolderInputBlur(input) {
     createFolderRequest(input.value.trim());
 }
 
+function isValidFolderName(name) {
+    // 不允许空、全空格
+    if (!name || !name.trim()) return false;
+    // 不允许点或空格开头结尾
+    if (/^[\. ]|[\. ]$/.test(name)) return false;
+    // 不允许特殊字符
+    if (/[\\\/:\*\?"<>\|]/.test(name)) return false;
+    // 长度限制
+    if (name.length > 64) return false;
+    return true;
+}
+
+
 function createFolderRequest(folderName) {
     if (!isCreatingFolder) return;
     isCreatingFolder = false;
-    if (!folderName) {
+    if (!isValidFolderName(folderName)) {
+        $.modal.alertError('文件夹名不合法，不能包含 \\/ : * ? " < > |，且不能以点或空格开头/结尾，长度不能超过64！');
         cancelCreateNewFolder();
         return;
     }
@@ -710,8 +724,7 @@ function createFolderRequest(folderName) {
     $.post({
         url: prefix + "/mkdirs",
         data: {
-            path: pathStack[pathStack.length-1].path + folderName, // 当前路径
-            name: folderName
+            path: pathStack[pathStack.length-1].path + "/" + folderName, // 当前路径
         },
         success: function(res) {
             if (res.code === 0) {
@@ -727,6 +740,7 @@ function createFolderRequest(folderName) {
         }
     });
 }
+
 function cancelCreateNewFolder() {
     isCreatingFolder = false;
     // 删除临时行
