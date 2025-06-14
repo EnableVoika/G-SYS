@@ -94,6 +94,14 @@ public class FileController extends BaseController
         return defaultFilePath + "/" + customFolderConfig + "/" + _UserId;
     }
 
+    /**
+     *
+     * @param _UserHome
+     * @param _AccessPath
+     * @param _Throw 是否抛出异常
+     * @return
+     * @throws IOException
+     */
     private String check_access_path(String _UserHome, String _AccessPath, boolean _Throw) throws IOException {
         long userId = getUserId();
         if (Constants.ADMIN_USER_ID.equals(userId))
