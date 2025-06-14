@@ -118,6 +118,22 @@ public class BaseController
         rspData.setCode(0);
         rspData.setRows(list);
         rspData.setTotal(new PageInfo(list).getTotal());
+        rspData.setMsg(ErrorCode.SUCCESS.what());
+        return rspData;
+    }
+
+    /**
+     * 响应请求分页数据
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected TableDataInfo getDataTable(List<?> list, String _Msg)
+    {
+        list = CollectionUtils.isEmpty(list) ? new ArrayList<>() : list;
+        TableDataInfo rspData = new TableDataInfo();
+        rspData.setCode(0);
+        rspData.setRows(list);
+        rspData.setTotal(new PageInfo(list).getTotal());
+        rspData.setMsg(_Msg);
         return rspData;
     }
 

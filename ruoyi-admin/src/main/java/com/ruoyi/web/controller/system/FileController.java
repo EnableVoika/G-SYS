@@ -4,6 +4,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.FileVO;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.exception.ServiceExcept;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
@@ -99,7 +100,7 @@ public class FileController extends BaseController
         }
 
         List<FileVO> data = fileService.list(userSpace.getAbsolutePath(), dto.getPath());
-        return getDataTable(data);
+        return getDataTable(data, ErrorCode.SUCCESS.what());
     }
 
 }

@@ -352,6 +352,10 @@
                     $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
                     setPathFromString(relativePath);
                 }
+                else
+                {
+                    $.modal.alertError(res.msg);
+                }
                 // console.log(res);
             },
             error: function(err) {
