@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
-    <th:block th:include="include :: header('表格图片预览')" />
+    <th:block th:include="include :: header('文件管理')" />
     <style>
 
 .file-clickable
@@ -188,8 +188,94 @@
     position: relative;
 }
 
+
+.dropdown-menu > li > a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    white-space: nowrap;
+}
+.dropdown-menu > li > a:hover {
+    background-color: #f5f5f5;
+    color: #000;
+}
+
+/* 新建下拉框展开 */
+.btn-group:hover > .dropdown-menu {
+    display: block;
+}
+/* 悬停或展开状态下，让“新建”按钮变绿色，菜单项不变 */
+.dropdown-new:hover > .dropdown-toggle,
+.dropdown-new.open > .dropdown-toggle {
+    background-color: #5cb85c;
+    color: #fff;
+    border-color: #4cae4c;
+    border-radius: 4px; /* 补上这一句！保证绿色背景有圆角 */
+}
+
+.dropdown-new:hover > .dropdown-toggle .caret,
+.dropdown-new.open > .dropdown-toggle .caret {
+    border-top-color: #fff;
+}
+.btn-group.dropdown-new {
+    position: relative;
+}
+
+.btn-group.dropdown-new .btn.dropdown-toggle {
+    border-radius: 4px;
+    margin-bottom: 0 !important;
+}
+
+
+.btn-group.dropdown-new .dropdown-menu {
+    margin-top: 0 !important;  /* 不要负值，否则会盖住按钮的圆角！ */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    min-width: 100%;
+    box-shadow: none;
+}
+
+
+/* 1. 新建按钮所有状态都保持圆角 */
+.btn-group.dropdown-new .btn.dropdown-toggle,
+.btn-group.dropdown-new.open > .btn.dropdown-toggle,
+.dropdown-new:hover > .dropdown-toggle,
+.dropdown-new.open > .dropdown-toggle {
+    border-radius: 4px !important;
+    background-color: #fff;  /* 普通状态白色 */
+    color: #333;
+    border-color: #ccc;
+    transition: background 0.2s, color 0.2s;
+}
+
+/* 2. 悬停/展开绿色态 */
+.dropdown-new:hover > .dropdown-toggle,
+.dropdown-new.open > .dropdown-toggle {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    border-color: #4cae4c !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+.btn-group.dropdown-new .dropdown-menu {
+    margin-top: 0 !important;
+    border-radius: 4px;
+    min-width: 100%;
+    box-shadow: none;
+    border: 1px solid #ccc !important;
+}
+
+
+
     </style>
     <link href="/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
 </head>
 <body class="gray-bg">
 <div class="container-div">
@@ -215,7 +301,20 @@
                     <i class="fa fa-rotate-right"></i>
                 </span>
             </div>
-            <!-- 导航栏结束 -->
+
+            <!-- 新建下拉框 -->
+            <div class="btn-group dropdown-new">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    新建 <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="javascript:;" onclick="createNewFolder()"><i class="fa fa-folder"></i> 新建目录</a></li>
+                    <li><a href="javascript:;" onclick="createEmptyFile()"><i class="fa fa-file"></i> 新建空白文件</a></li>
+                    <li><a href="javascript:;" onclick="createSymlinkFile()"><i class="fa fa-link text-primary"></i> 软链接文件</a></li>
+                </ul>
+            </div>
+
+            <!-- 文件列表 -->
             <table id="bootstrap-table"></table>
         </div>
     </div>
@@ -515,6 +614,27 @@
         exitEditMode();
     };
 
+// 新建下拉框部分逻辑
+function createNewFolder() {
+    console.log("点击新建目录");
+    // 调用插入输入框的逻辑
+}
+
+function createEmptyFile() {
+    console.log("点击新建空白文件");
+    // 弹窗输入文件名 or inline 插入编辑行
+}
+
+function createSymlinkFile() {
+    console.log("点击新建软链接文件");
+    // 可弹窗输入目标路径
+}
+
+$('.btn-group.dropdown-new').on('mouseenter', function() {
+    $(this).addClass('open');
+}).on('mouseleave', function() {
+    $(this).removeClass('open');
+});
 
 </script>
 </body>
