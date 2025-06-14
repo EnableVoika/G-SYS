@@ -333,182 +333,183 @@
         updateBreadcrumbBar();
     });
 
-        function onFileClick(event, relativePath)
-        {
-            event.stopPropagation(); // 阻止选中行
-            relativePath = decodeURIComponent(relativePath);
-            console.log("点击文件：", relativePath);
-            get_list(relativePath);
-        }
+    function onFileClick(event, relativePath)
+    {
+        event.stopPropagation(); // 阻止选中行
+        relativePath = decodeURIComponent(relativePath);
+        // console.log("点击文件：", relativePath);
+        get_list(relativePath);
+    }
 
-        function get_list(relativePath)
-        {
-            $.post({
-                url: prefix + "/list",
-                data: { path: relativePath },
-                success: function(res) {
-                    if(res.code === 0)
-                    {
-                        $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
-                        setPathFromString(relativePath);
-                    }
-                    console.log(res);
-                },
-                error: function(err) {
-                    console.error("请求失败：", err);
+    function get_list(relativePath)
+    {
+        $.post({
+            url: prefix + "/list",
+            data: { path: relativePath },
+            success: function(res) {
+                if(res.code === 0)
+                {
+                    $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
+                    setPathFromString(relativePath);
                 }
-            });
-        }
+                // console.log(res);
+            },
+            error: function(err) {
+                console.error("请求失败：", err);
+            }
+        });
+    }
 
-// 更新路径栏展示
-function updateBreadcrumbBar() {
-    const container = document.getElementById('breadcrumb-bar');
-    container.innerHTML = '';
+    // 更新路径栏展示
+    function updateBreadcrumbBar() {
+        const container = document.getElementById('breadcrumb-bar');
+        container.innerHTML = '';
 
-    const maxVisible = 15; // 最多显示几个末尾路径
-    const hiddenCount = pathStack.length - maxVisible;
+        const maxVisible = 15; // 最多显示几个末尾路径
+        const hiddenCount = pathStack.length - maxVisible;
 
-    const renderSegment = (segment, index) => {
-        const partDiv = document.createElement('div');
-        partDiv.className = 'breadcrumb-segment';
-        partDiv.textContent = segment.name;
+        const renderSegment = (segment, index) => {
+            const partDiv = document.createElement('div');
+            partDiv.className = 'breadcrumb-segment';
+            partDiv.textContent = segment.name;
 
-        partDiv.onclick = (e) => {
-            e.stopPropagation();
-            pathStack = pathStack.slice(0, index + 1);
-            updateBreadcrumbBar();
-            get_list(segment.path);
+            partDiv.onclick = (e) => {
+                e.stopPropagation();
+                pathStack = pathStack.slice(0, index + 1);
+                updateBreadcrumbBar();
+                get_list(segment.path);
+            };
+
+            container.appendChild(partDiv);
+
+            if (index < pathStack.length - 1) {
+                const divider = document.createElement('div');
+                divider.className = 'breadcrumb-divider';
+                divider.textContent = '>';
+                divider.onclick = (e) => e.stopPropagation();
+                container.appendChild(divider);
+            }
         };
 
-        container.appendChild(partDiv);
+        if (hiddenCount > 0) {
+            const ellipsis = document.createElement('div');
+            ellipsis.className = 'breadcrumb-segment';
+            ellipsis.textContent = '«';
+            ellipsis.onclick = () => {
+                updateBreadcrumbBarFull();
+            };
+            container.appendChild(ellipsis);  // 只保留 «，不要多余分隔符
+        }
 
-        if (index < pathStack.length - 1) {
-            const divider = document.createElement('div');
-            divider.className = 'breadcrumb-divider';
-            divider.textContent = '>';
-            divider.onclick = (e) => e.stopPropagation();
-            container.appendChild(divider);
+        const visibleSegments = pathStack.slice(-maxVisible);
+        const baseIndex = pathStack.length - visibleSegments.length;
+        visibleSegments.forEach((seg, i) => {
+            renderSegment(seg, baseIndex + i);
+        });
+    }
+
+    function updateBreadcrumbBarFull() {
+        const container = document.getElementById('breadcrumb-bar');
+        container.innerHTML = '';
+
+        pathStack.forEach((segment, index) => {
+            const partDiv = document.createElement('div');
+            partDiv.className = 'breadcrumb-segment';
+            partDiv.textContent = segment.name;
+
+            partDiv.onclick = (e) => {
+                e.stopPropagation();
+                pathStack = pathStack.slice(0, index + 1);
+                updateBreadcrumbBar();
+                get_list(segment.path);
+            };
+
+            container.appendChild(partDiv);
+
+            if (index < pathStack.length - 1) {
+                const divider = document.createElement('div');
+                divider.className = 'breadcrumb-divider';
+                divider.textContent = '>';
+                divider.onclick = (e) => e.stopPropagation();
+                container.appendChild(divider);
+            }
+        });
+    }
+
+
+    // 解析路径字符串并更新 pathStack
+    function setPathFromString(fullPath) {
+        // 替换所有反斜杠为正斜杠（防止平台兼容问题）
+        const normalizedPath = fullPath.replace(/\\/g, '/');
+        const parts = normalizedPath.split('/').filter(part => part !== '');
+
+        pathStack = [];
+
+        let cumulativePath = '';
+        pathStack.push({ name: '根目录', path: '' }); // 根路径
+
+        for (let i = 0; i < parts.length; i++) {
+            cumulativePath += (cumulativePath ? '/' : '') + parts[i];
+            pathStack.push({ name: parts[i], path: cumulativePath });
+        }
+
+        updateBreadcrumbBar();
+    }
+
+    document.getElementById('breadcrumb-back').onclick = () => {
+        if (pathStack.length > 1) {
+            pathStack.pop();
+            updateBreadcrumbBar();
+            const last = pathStack[pathStack.length - 1];
+            get_list(last.path);
         }
     };
+    document.getElementById('breadcrumb-refresh').onclick = () => {
+        const last = pathStack[pathStack.length - 1];
+        get_list(last.path); // 重新请求当前路径
+    };
 
-    if (hiddenCount > 0) {
-        const ellipsis = document.createElement('div');
-        ellipsis.className = 'breadcrumb-segment';
-        ellipsis.textContent = '«';
-        ellipsis.onclick = () => {
-            updateBreadcrumbBarFull();
-        };
-        container.appendChild(ellipsis);  // 只保留 «，不要多余分隔符
-    }
 
-    const visibleSegments = pathStack.slice(-maxVisible);
-    const baseIndex = pathStack.length - visibleSegments.length;
-    visibleSegments.forEach((seg, i) => {
-        renderSegment(seg, baseIndex + i);
-    });
-}
-function updateBreadcrumbBarFull() {
-    const container = document.getElementById('breadcrumb-bar');
-    container.innerHTML = '';
 
-    pathStack.forEach((segment, index) => {
-        const partDiv = document.createElement('div');
-        partDiv.className = 'breadcrumb-segment';
-        partDiv.textContent = segment.name;
-
-        partDiv.onclick = (e) => {
-            e.stopPropagation();
-            pathStack = pathStack.slice(0, index + 1);
-            updateBreadcrumbBar();
-            get_list(segment.path);
-        };
-
-        container.appendChild(partDiv);
-
-        if (index < pathStack.length - 1) {
-            const divider = document.createElement('div');
-            divider.className = 'breadcrumb-divider';
-            divider.textContent = '>';
-            divider.onclick = (e) => e.stopPropagation();
-            container.appendChild(divider);
+    document.querySelector('.breadcrumb-wrapper').addEventListener('click', function(e) {
+        const isSegment = e.target.classList.contains('breadcrumb-segment');
+        const isDivider = e.target.classList.contains('breadcrumb-divider');
+        const isInput = e.target.classList.contains('breadcrumb-input');
+        if (!isSegment && !isDivider && !isInput) {
+            enterEditMode();
         }
     });
-}
 
 
-// 解析路径字符串并更新 pathStack
-function setPathFromString(fullPath) {
-    // 替换所有反斜杠为正斜杠（防止平台兼容问题）
-    const normalizedPath = fullPath.replace(/\\/g, '/');
-    const parts = normalizedPath.split('/').filter(part => part !== '');
-
-    pathStack = [];
-
-    let cumulativePath = '';
-    pathStack.push({ name: '根目录', path: '' }); // 根路径
-
-    for (let i = 0; i < parts.length; i++) {
-        cumulativePath += (cumulativePath ? '/' : '') + parts[i];
-        pathStack.push({ name: parts[i], path: cumulativePath });
+    function enterEditMode() {
+        document.getElementById('breadcrumb-bar').style.display = 'none';
+        document.getElementById('breadcrumb-input-wrapper').style.display = 'block';
+        // 初始化输入内容
+        let path = pathStack[pathStack.length - 1].path || '';
+        document.getElementById('breadcrumb-input').value = path.replace(/^\//, '');
+        document.getElementById('breadcrumb-input').focus();
     }
 
-    updateBreadcrumbBar();
-}
-
-document.getElementById('breadcrumb-back').onclick = () => {
-    if (pathStack.length > 1) {
-        pathStack.pop();
-        updateBreadcrumbBar();
-        const last = pathStack[pathStack.length - 1];
-        get_list(last.path);
+    // 取消输入或回车
+    function exitEditMode() {
+        document.getElementById('breadcrumb-bar').style.display = 'flex';
+        document.getElementById('breadcrumb-input-wrapper').style.display = 'none';
     }
-};
-document.getElementById('breadcrumb-refresh').onclick = () => {
-    const last = pathStack[pathStack.length - 1];
-    get_list(last.path); // 重新请求当前路径
-};
 
-
-
-document.querySelector('.breadcrumb-wrapper').addEventListener('click', function(e) {
-    const isSegment = e.target.classList.contains('breadcrumb-segment');
-    const isDivider = e.target.classList.contains('breadcrumb-divider');
-    const isInput = e.target.classList.contains('breadcrumb-input');
-    if (!isSegment && !isDivider && !isInput) {
-        enterEditMode();
-    }
-});
-
-
-function enterEditMode() {
-    document.getElementById('breadcrumb-bar').style.display = 'none';
-    document.getElementById('breadcrumb-input-wrapper').style.display = 'block';
-    // 初始化输入内容
-    let path = pathStack[pathStack.length - 1].path || '';
-    document.getElementById('breadcrumb-input').value = path.replace(/^\//, '');
-    document.getElementById('breadcrumb-input').focus();
-}
-
-// 取消输入或回车
-function exitEditMode() {
-    document.getElementById('breadcrumb-bar').style.display = 'flex';
-    document.getElementById('breadcrumb-input-wrapper').style.display = 'none';
-}
-
-// 绑定输入框事件
-document.getElementById('breadcrumb-input').onkeydown = function(e) {
-    if (e.key === 'Enter') {
-        let rawPath = this.value.trim();
-        if (rawPath.startsWith('/')) rawPath = rawPath.substring(1);
+    // 绑定输入框事件
+    document.getElementById('breadcrumb-input').onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            let rawPath = this.value.trim();
+            if (rawPath.startsWith('/')) rawPath = rawPath.substring(1);
+            exitEditMode();
+            get_list(rawPath);
+        } else if (e.key === 'Escape') {
+            exitEditMode();
+        }
+    };
+    document.getElementById('breadcrumb-input').onblur = function() {
         exitEditMode();
-        get_list(rawPath);
-    } else if (e.key === 'Escape') {
-        exitEditMode();
-    }
-};
-document.getElementById('breadcrumb-input').onblur = function() {
-    exitEditMode();
-};
+    };
 
 
 </script>
