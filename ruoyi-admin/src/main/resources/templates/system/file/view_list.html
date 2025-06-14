@@ -217,8 +217,8 @@
 }
 
 /* “新建”按钮绿色高亮（只保留一份！） */
-.dropdown-new:hover > .dropdown-toggle,
-.dropdown-new.open > .dropdown-toggle {
+.dropdown-unified:hover > .dropdown-toggle,
+.dropdown-unified.open > .dropdown-toggle {
     background-color: #5cb85c !important;
     color: #fff !important;
     border-color: #4cae4c !important;
@@ -248,16 +248,16 @@
     display: block;
 }
 
-.dropdown-new:hover > .dropdown-toggle .caret,
-.dropdown-new.open > .dropdown-toggle .caret {
+.dropdown-unified:hover > .dropdown-toggle .caret,
+.dropdown-unified.open > .dropdown-toggle .caret {
     border-top-color: #fff;
 }
-.btn-group.dropdown-new {
+.btn-group.dropdown-unified {
     position: relative;
 }
 
 /* 新建下拉菜单 */
-.btn-group.dropdown-new .dropdown-menu {
+.btn-group.dropdown-unified .dropdown-menu {
     margin-top: 0 !important;
     border-radius: 4px;
     min-width: 100%;
@@ -309,7 +309,7 @@
             <!-- 新建等按钮 -->
             <div class="action-btns" style="display: flex; gap: 8px;">
                 <!-- 新建（带下拉） -->
-                <div class="btn-group dropdown-new">
+                <div class="btn-group dropdown-unified">
                     <button type="button" class="btn btn-default btn-sm action-btn dropdown-toggle" data-toggle="dropdown">
                         新建 <span class="caret"></span>
                     </button>
@@ -661,7 +661,7 @@ function createSymlinkFile() {
     // 可弹窗输入目标路径
 }
 
-$('.btn-group.dropdown-new').on('mouseenter', function() {
+$('.btn-group.dropdown-unified').on('mouseenter', function() {
     $(this).addClass('open');
 }).on('mouseleave', function() {
     $(this).removeClass('open');
