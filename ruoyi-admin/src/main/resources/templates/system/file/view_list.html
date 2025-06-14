@@ -189,6 +189,46 @@
 }
 
 
+
+/* 通用工具栏按钮样式 */
+.action-btn {
+    height: 30px;
+    min-width: 68px;
+    padding: 2px 16px;
+    font-size: 13px;
+    line-height: 1.08;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    box-shadow: none;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    background: #e6e6e6;
+    color: #333;
+    border-color: #aaa;
+}
+
+/* “新建”按钮绿色高亮（只保留一份！） */
+.dropdown-new:hover > .dropdown-toggle,
+.dropdown-new.open > .dropdown-toggle {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    border-color: #4cae4c !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+
+
+
 .dropdown-menu > li > a {
     display: flex;
     align-items: center;
@@ -216,40 +256,6 @@
     position: relative;
 }
 
-.btn-group.dropdown-new .btn.dropdown-toggle {
-    border-radius: 4px;
-    margin-bottom: 0 !important;
-    /* 新加以下几行，实现更高更宽 */
-    height: 30px;
-    min-width: 68px;
-    padding: 2px 10px;
-    font-size: 13px;
-    line-height: 1.08;
-}
-
-
-/* 新建按钮所有状态都保持圆角 */
-.btn-group.dropdown-new .btn.dropdown-toggle,
-.btn-group.dropdown-new.open > .btn.dropdown-toggle,
-.dropdown-new:hover > .dropdown-toggle,
-.dropdown-new.open > .dropdown-toggle {
-    border-radius: 4px !important;
-    background-color: #fff;  /* 普通状态白色 */
-    color: #333;
-    border-color: #ccc;
-    transition: background 0.2s, color 0.2s;
-}
-
-/* 悬停/展开绿色态 */
-.dropdown-new:hover > .dropdown-toggle,
-.dropdown-new.open > .dropdown-toggle {
-    background-color: #5cb85c !important;
-    color: #fff !important;
-    border-color: #4cae4c !important;
-    border-radius: 4px !important;
-    box-shadow: none !important;
-}
-
 /* 新建下拉菜单 */
 .btn-group.dropdown-new .dropdown-menu {
     margin-top: 0 !important;
@@ -259,6 +265,14 @@
     border: 1px solid #ccc !important;
 }
 
+/* 使按钮颜色变绿 */
+.btn-green-hover:hover,
+.btn-green-hover:focus {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    border-color: #4cae4c !important;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
 
 
     </style>
@@ -292,16 +306,43 @@
                 </span>
             </div>
 
-            <!-- 新建下拉框 -->
-            <div class="btn-group dropdown-new">
-                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-                    新建 <span class="caret"></span>
+            <!-- 新建等按钮 -->
+            <div class="action-btns" style="display: flex; gap: 8px;">
+                <!-- 新建（带下拉） -->
+                <div class="btn-group dropdown-new">
+                    <button type="button" class="btn btn-default btn-sm action-btn dropdown-toggle" data-toggle="dropdown">
+                        新建 <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="javascript:;" onclick="createNewFolder()">
+                                <i class="fa fa-folder"></i> 新建目录
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:;" onclick="createEmptyFile()">
+                                <i class="fa fa-file"></i> 新建空白文件
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:;" onclick="createSymlinkFile()">
+                                <i class="fa fa-link text-primary"></i> 软链接文件
+                            </a>
+                        </li>
+                        <!-- 你可以再加其它下拉菜单项 -->
+                    </ul>
+                </div>
+                <!-- 普通按钮 -->
+                <button type="button" class="btn btn-default btn-sm action-btn" onclick="uploadFile()">
+                    <i class="fa fa-upload"></i> 上传
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a href="javascript:;" onclick="createNewFolder()"><i class="fa fa-folder"></i> 新建目录</a></li>
-                    <li><a href="javascript:;" onclick="createEmptyFile()"><i class="fa fa-file"></i> 新建空白文件</a></li>
-                    <li><a href="javascript:;" onclick="createSymlinkFile()"><i class="fa fa-link text-primary"></i> 软链接文件</a></li>
-                </ul>
+                <button type="button" class="btn btn-default btn-sm action-btn" onclick="downloadFile()">
+                    <i class="fa fa-download"></i> 下载
+                </button>
+                <button type="button" class="btn btn-default btn-sm action-btn btn-green-hover" onclick="searchFileContent()">
+                    <i class="fa fa-search"></i> 文件内容查找
+                </button>
+                <!-- 以后新增按钮只要加 .action-btn，自动匹配，不用动样式 -->
             </div>
 
             <!-- 文件列表 -->
