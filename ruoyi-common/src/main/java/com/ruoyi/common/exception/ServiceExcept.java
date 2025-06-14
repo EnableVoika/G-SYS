@@ -77,11 +77,16 @@ public final class ServiceExcept extends RuntimeException
 //        return this;
 //    }
 
-    public ErrorCode getType() {
-        return type;
-    }
+//    public ErrorCode getType() {
+//        return type;
+//    }
 //
 //    public void setType(AjaxResult.Type type) {
 //        this.type = type;
 //    }
+
+
+    public int getCode() {
+        return code;
+    }
 }

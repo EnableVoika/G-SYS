@@ -60,6 +60,16 @@ public class AjaxResult extends HashMap<String, Object>
         }
     }
 
+    public AjaxResult(int _Code, String msg, Object data)
+    {
+        super.put(CODE_TAG, _Code);
+        super.put(MSG_TAG, msg);
+        if (StringUtils.isNotNull(data))
+        {
+            super.put(DATA_TAG, data);
+        }
+    }
+
     /**
      * 返回成功消息
      *
@@ -236,6 +246,11 @@ public class AjaxResult extends HashMap<String, Object>
     }
 
     public static AjaxResult fail(ErrorCode _Code, String msg)
+    {
+        return new AjaxResult(_Code, msg, null);
+    }
+
+    public static AjaxResult fail(int _Code, String msg)
     {
         return new AjaxResult(_Code, msg, null);
     }

@@ -84,7 +84,7 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            return AjaxResult.fail(e.getType(), e.getMessage());
+            return AjaxResult.fail(e.getCode(), e.getMessage());
         }
         catch (RuntimeException e)
         {
@@ -157,9 +157,9 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(), e);
-            response.addHeader("Code", String.valueOf(e.getType().code()));
+            response.addHeader("Code", String.valueOf(e.getCode()));
             response.addHeader("Msg", e.getMessage());
-            return AjaxResult.fail(e.getType(), e.getMessage());
+            return AjaxResult.fail(e.getCode(), e.getMessage());
         }
         catch (RuntimeException e)
         {
@@ -203,7 +203,7 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(),e);
-            return AjaxResult.fail(e.getType(), e.getMessage());
+            return AjaxResult.fail(e.getCode(), e.getMessage());
         }
         catch (Exception e)
         {
@@ -249,7 +249,7 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(),e);
-            return AjaxResult.fail(e.getType(), e.getMessage());
+            return AjaxResult.fail(e.getCode(), e.getMessage());
         }
         catch (Exception e)
         {
@@ -288,7 +288,7 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(),e);
-            return AjaxResult.fail(e.getType(),e.getMessage());
+            return AjaxResult.fail(e.getCode(),e.getMessage());
         }
         catch (Exception e)
         {
@@ -312,7 +312,7 @@ public class CppAPIController {
         catch (ServiceExcept e)
         {
             log.error(e.getMessage(),e);
-            return AjaxResult.fail(e.getType(),e.getMessage());
+            return AjaxResult.fail(e.getCode(),e.getMessage());
         }
         catch (Exception e)
         {
