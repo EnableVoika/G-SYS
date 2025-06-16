@@ -131,6 +131,4 @@ public class Constants
 
     public static final Long ADMIN_USER_ID = 1L;
 
-    public static final String RECYCLE_INFO_FILE_NAME = ".recycle.info";
-
 }
