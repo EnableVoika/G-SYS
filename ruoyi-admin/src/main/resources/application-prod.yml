@@ -8,16 +8,15 @@ ruoyi:
   copyrightYear: 2025
   # 实例演示开关
   demoEnabled: true
-  profile: /home/iy/RcvPath/gsys
   # 获取ip地址开关
   addressEnabled: false
   default_file_path: /home/iy/RcvPath
+  profile: ${ruoyi.default_file_path}/gsys
   custom-folder: CustomFolder
+  trash-folder-root-path: ${ruoyi.default_file_path}/.recycle
 
-gsys:
-  profile: ${ruoyi.profile}
 cpp-api:
-  profile: /home/iy/RcvPath
+  profile: ${ruoyi.default_file_path}
 #  download-block-size: 10485760
   download-block-size: 20971520
 

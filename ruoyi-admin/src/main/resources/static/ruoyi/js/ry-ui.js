@@ -801,12 +801,58 @@ var table = {
                 $.modal.alert(content, modal_status.FAIL);
             },
             // 成功提示
-            alertSuccess: function(content) {
+            alertSuccess: function(content, callback) {
                 $.modal.alert(content, modal_status.SUCCESS);
             },
+            alertSuccess_callback: function(content, callback, cancel_callback) {
+                top.layer.alert(content, {
+                    icon: $.modal.icon(modal_status.SUCCESS),
+                    title: "系统提示",
+                    btn: ['确认'],
+                    btnclass: ['btn btn-primary'],
+                    cancel: function ()
+                    {
+                        if (typeof cancel_callback === "function")
+                        {
+                            cancel_callback();
+                        }
+                    },
+                    yes: function(index)
+                    {
+                        top.layer.close(index);
+                        if (typeof callback === "function")
+                        {
+                            callback();
+                        }
+                    }
+                });
+            },
             // 警告提示
-            alertWarning: function(content) {
+            alertWarning: function(content)
+            {
                 $.modal.alert(content, modal_status.WARNING);
+            },
+            alertWarning_callback: function(content, callback, cancel_callback)
+            {
+                top.layer.alert(content, {
+                    icon: $.modal.icon(modal_status.WARNING),
+                    title: "系统提示",
+                    btn: ['确认'],
+                    btnclass: ['btn btn-primary'],
+                    cancel: function ()
+                    {
+                        if (typeof cancel_callback === "function")
+                        {
+                            cancel_callback();
+                        }
+                    },
+                    yes: function(index) {
+                        top.layer.close(index);
+                        if (typeof callback === "function") {
+                            callback();
+                        }
+                    }
+                });
             },
             // 消息提示，重新加载页面
             msgReload: function(msg, type) {

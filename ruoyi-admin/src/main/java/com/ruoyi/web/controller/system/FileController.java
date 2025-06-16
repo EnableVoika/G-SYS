@@ -3,6 +3,7 @@ package com.ruoyi.web.controller.system;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.domain.DelFailFile;
 import com.ruoyi.common.core.domain.FileVO;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.ErrorCode;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -63,36 +65,6 @@ public class FileController extends BaseController
 //        List<FileVO> data = fileService.list(defaultFilePath, dto.getPath());
 //        return getDataTable(data);
 //    }
-
-    /**
-     * 末尾不带 "/"
-     * @param _Dest
-     */
-    private void getUserHome(StringBuffer _Dest)
-    {
-        long userId = getUserId();
-        if (Constants.ADMIN_USER_ID.equals(userId))
-        {
-            _Dest.append(defaultFilePath);
-            return;
-        }
-        _Dest.append(defaultFilePath).append("/").append(customFolderConfig).append("/").append(userId);
-    }
-
-    private String getUserHome()
-    {
-        long userId = getUserId();
-        if (Constants.ADMIN_USER_ID.equals(userId))
-            return defaultFilePath;
-        return defaultFilePath + "/" + customFolderConfig + "/" + userId;
-    }
-
-    private String getUserHome(Long _UserId)
-    {
-        if (Constants.ADMIN_USER_ID.equals(_UserId))
-            return defaultFilePath;
-        return defaultFilePath + "/" + customFolderConfig + "/" + _UserId;
-    }
 
     /**
      *
@@ -140,7 +112,7 @@ public class FileController extends BaseController
         if (StringUtils.isNotEmpty(dto.getPath()))
             dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
         long userId = ShiroUtils.getUserId();
-        String userHome = getUserHome(userId);
+        String userHome = fileService.getUserHome(userId);
         // admin不走用户逻辑
         if (Constants.ADMIN_USER_ID.equals(userId))
         {
@@ -165,12 +137,12 @@ public class FileController extends BaseController
 
     @PostMapping("/mkdirs")
     @ResponseBody
-    @RequiresPermissions("system:file:add")
+    @RequiresPermissions("system:file:mkdir")
     public AjaxResult mkdirs(FileDTO dto) throws IOException {
         if (StringUtils.isNotEmpty(dto.getPath()))
             dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
         Long userId = getUserId();
-        String userHome = getUserHome(userId);
+        String userHome =  fileService.getUserHome(userId);
         if (Constants.ADMIN_USER_ID.equals(userId))
         {
             fileService.mkdirs(userHome, dto.getPath());
@@ -187,10 +159,44 @@ public class FileController extends BaseController
      * @param dto
      * @return
      */
-    @DeleteMapping("/remove")
-    public AjaxResult remove(FileDTO dto)
+    @DeleteMapping("/recycle")
+    @ResponseBody
+    @RequiresPermissions("system:file:recycle")
+    public AjaxResult recycle(@RequestBody FileDTO dto) throws IOException
     {
-        return AjaxResult.ok();
+        if (StringUtils.isEmpty(dto.getPath()) && (null ==  dto.getPaths() || dto.getPaths().isEmpty()))
+            throw new ServiceExcept("文件路径不能为空");
+        List<String> newPaths = new ArrayList<>();
+        String userHome =  fileService.getUserHome();
+        if (null != dto.getPaths())
+        {
+            for (String path : dto.getPaths())
+            {
+                if (StringUtils.isNotEmpty(path))
+                {
+                    path = (path.startsWith("/") || path.startsWith("\\")) ? path : ( "/" + path);
+                    path = check_access_path(userHome, path, true);
+                    newPaths.add(path);
+                }
+            }
+        }
+        if (StringUtils.isNotEmpty(dto.getPath()))
+        {
+            dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
+            dto.setPath(check_access_path(userHome, dto.getPath(), true));
+            newPaths.add(dto.getPath());
+        }
+        dto.setPaths(newPaths);
+        List<DelFailFile> delFailFileList = fileService.recycle(getUserId(), dto.getPaths());
+        if (!delFailFileList.isEmpty())
+        {
+            if (delFailFileList.size() == 1)
+            {
+                return AjaxResult.fail(delFailFileList.getFirst().getFailReason(), delFailFileList);
+            }
+            return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件未能删除", delFailFileList);
+        }
+        return AjaxResult.ok("删除成功, 你可以到回收站里查看");
     }
 
 }

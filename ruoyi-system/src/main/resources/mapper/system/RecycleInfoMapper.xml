@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.RecycleInfoMapper">
+
+    <resultMap type="com.ruoyi.system.domain.RecycleInfo" id="RecycleInfoResult">
+        <id     property="uuid"      column="uuid"      />
+        <result property="userId"      column="user_id"      />
+        <result property="fileType"      column="file_type"      />
+        <result property="originalFileName"    column="original_file_name"    />
+        <result property="originalRelativePath"     column="original_relative_path"     />
+        <result property="recycleRelativePath"   column="recycle_relative_path"   />
+        <result property="deletedAt"    column="deleted_at"    />
+    </resultMap>
+
+    <sql id="selectRecycleInfo">
+        select uuid, user_id, file_type, original_file_name, original_relative_path, recycle_relative_path,deleted_at
+        from recycle_info
+    </sql>
+
+    <select id="search" resultMap="RecycleInfoResult" parameterType="com.ruoyi.common.core.domain.dto.RecycleInfoCondition">
+        <include refid="selectRecycleInfo" />
+        <where>
+            1=1
+            <if test="null != uuid and '' != uuid">
+                and uuid = #{uuid}
+            </if>
+            <if test="null != userId">
+                and user_id = #{userId}
+            </if>
+            <if test="null != fileType">
+                and file_type = #{fileType}
+            </if>
+            <if test="originalFileName != null and originalFileName != ''">
+                AND original_file_name LIKE CONCAT('%', #{originalFileName}, '%')
+            </if>
+            <if test="null != originalRelativePath and '' != originalRelativePath">
+                and original_relative_path = #{originalRelativePath}
+            </if>
+            <if test="null != recycleRelativePath and '' != recycleRelativePath">
+                and recycle_relative_path = #{recycleRelativePath}
+            </if>
+            <if test="deletedAtBegin != null">
+                AND deleted_at &gt;= #{deletedAtBegin}
+            </if>
+            <if test="deletedAtEnd != null">
+                AND deleted_at &lt;= #{deletedAtEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByUUID" resultMap="RecycleInfoResult" parameterType="String">
+        <include refid="selectRecycleInfo" />
+        <where>
+            uuid = #{uuid}
+        </where>
+    </select>
+
+    <!-- 添加记录 -->
+    <insert id="insert_batch" parameterType="java.util.List">
+        INSERT INTO recycle_info (
+        uuid,
+        user_id,
+        file_type,
+        original_file_name,
+        original_relative_path,
+        recycle_relative_path,
+        deleted_at
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.uuid},
+            #{item.userId},
+            <choose>
+                <when test="item.fileType != null">
+                    #{item.fileType, jdbcType=INTEGER}
+                </when>
+                <otherwise>
+                    NULL
+                </otherwise>
+            </choose>,
+            #{item.originalFileName},
+            #{item.originalRelativePath},
+            #{item.recycleRelativePath},
+            <choose>
+                <when test="item.deletedAt != null">
+                    #{item.deletedAt, jdbcType=TIMESTAMP}
+                </when>
+                <otherwise>
+                    NULL
+                </otherwise>
+            </choose>
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insert" parameterType="com.ruoyi.system.domain.RecycleInfo">
+        INSERT INTO recycle_info (
+        uuid,
+        user_id,
+        file_type,
+        original_file_name,
+        original_relative_path,
+        recycle_relative_path,
+        deleted_at
+        )
+        VALUES (
+        #{uuid},
+        #{userId},
+        <choose>
+            <when test="fileType != null">
+                #{fileType, jdbcType=INTEGER}
+            </when>
+            <otherwise>
+                NULL
+            </otherwise>
+        </choose>,
+        #{originalFileName},
+        #{originalRelativePath},
+        #{recycleRelativePath},
+        <choose>
+            <when test="deletedAt != null">
+                #{deletedAt, jdbcType=TIMESTAMP}
+            </when>
+            <otherwise>
+                NULL
+            </otherwise>
+        </choose>
+        )
+    </insert>
+
+    <delete id="delByUUID" parameterType="list">
+        DELETE FROM recycle_info
+        WHERE uuid IN
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -250,6 +250,11 @@ public class AjaxResult extends HashMap<String, Object>
         return new AjaxResult(_Code, msg, null);
     }
 
+    public static AjaxResult fail(ErrorCode _Code, String msg, Object _Data)
+    {
+        return new AjaxResult(_Code, msg, _Data);
+    }
+
     public static AjaxResult fail(int _Code, String msg)
     {
         return new AjaxResult(_Code, msg, null);

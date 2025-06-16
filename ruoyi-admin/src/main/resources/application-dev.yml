@@ -8,15 +8,16 @@ ruoyi:
   copyrightYear: 2025
   # 实例演示开关
   demoEnabled: true
-  # 文件路径 示例（ Windows配置 D:/data/tmp/RcvFile/gsys，Linux配置 /home/ruoyi/uploadPath）
-  profile: D:\data\tmp\g-sys\RcvPath\gsys
   # 获取ip地址开关
   addressEnabled: false
   default_file_path: D:\data\tmp\g-sys\RcvPath
+  # 文件路径 示例（ Windows配置 D:/data/tmp/RcvFile/gsys，Linux配置 /home/ruoyi/uploadPath）
+  profile: ${ruoyi.default_file_path}\gsys
   custom-folder: CustomFolder
+  recycle-folder-root-path: ${ruoyi.default_file_path}\.recycle
 
 cpp-api:
-  profile: D:\data\tmp\g-sys\RcvPath
+  profile: ${ruoyi.default_file_path}
 #  download-block-size: 10485760
   download-block-size: 20971520
 
@@ -77,7 +78,7 @@ spring:
     druid:
       # 主库数据源
       master:
-        url: jdbc:mysql://192.168.226.251:3306/gsys-dev?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+        url: jdbc:mysql://192.168.226.104:3306/gsys-dev?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
         username: gsys-dev
         password: mXGiHendxL48zijx
       # 从库数据源

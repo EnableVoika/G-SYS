@@ -348,6 +348,13 @@
                     <i class="fa fa-search"></i> 文件内容查找
                 </button>
                 <!-- 以后新增按钮只要加 .action-btn，自动匹配，不用动样式 -->
+                <button id="delete-selected-btn"
+                        type="button"
+                        class="btn btn-danger btn-sm action-btn"
+                        style="display: none;"
+                        onclick="recycleSelectedFiles()">
+                    <i class="fa fa-trash"></i> 删除选中
+                </button>
             </div>
 
             <!-- 文件列表 -->
@@ -410,6 +417,11 @@
             showColumns: false,
             clickToSelect: true,
             pagination: false,
+
+            onCheck: handleSelectionChange,
+            onUncheck: handleSelectionChange,
+            onCheckAll: handleSelectionChange,
+            onUncheckAll: handleSelectionChange,
             columns: [{
                 checkbox: true
             },
@@ -479,7 +491,7 @@
                 formatter: function(value, row, index) {
                     var actions = [];
                     actions.push('<a class="btn btn-success btn-xs" href="javascript:;"><i class="fa fa-edit"></i>编辑</a> ');
-                    actions.push('<a class="btn btn-danger btn-xs" href="javascript:;"><i class="fa fa-remove"></i>删除</a>');
+                    actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="recycleSingle(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-remove"></i>删除</a>');
                     return actions.join('');
                 }
             }]
@@ -517,6 +529,7 @@
                 console.error("请求失败：", err);
             }
         });
+        $('#delete-selected-btn').hide();
     }
 
     // 更新路径栏展示
@@ -766,6 +779,79 @@ $('.btn-group.dropdown-unified').on('mouseenter', function() {
     $(this).removeClass('open');
 });
 
+function handleSelectionChange() {
+    const selections = $('#bootstrap-table').bootstrapTable('getSelections');
+    if (selections.length > 0) {
+        $('#delete-selected-btn').show();
+    } else {
+        $('#delete-selected-btn').hide();
+    }
+}
+
+function recycleRequest(paths)
+{
+    $.ajax({
+        url: prefix + "/recycle",
+        type: "DELETE",
+        contentType: "application/json",
+        data: JSON.stringify({ paths: paths }), // 假设后端按 JSON 结构接收
+        success: function (res)
+        {
+            console.log(res)
+            if (res.code === 0)
+            {
+                $.modal.alertSuccess_callback(res.msg, function ()
+                {
+                    get_list(pathStack[pathStack.length - 1].path);
+                },
+                function ()
+                {
+                    get_list(pathStack[pathStack.length - 1].path);
+                });
+            }
+            else if(res.code === 513)
+            {
+                $.modal.alertWarning_callback(res.msg, function ()
+                {
+                    get_list(pathStack[pathStack.length - 1].path);
+                },
+                function ()
+                {
+                    get_list(pathStack[pathStack.length - 1].path);
+                });
+            }
+            else
+            {
+                $.modal.alertError(res.msg || "删除失败");
+            }
+
+        },
+        error: function () {
+            $.modal.alertError("网络异常");
+        }
+    });
+}
+
+function recycleSelectedFiles()
+{
+    const selections = $('#bootstrap-table').bootstrapTable('getSelections');
+    if (selections.length === 0) return;
+    $.modal.confirm(`确认删除这 ${selections.length} 项吗？`, function ()
+    {
+        const paths = selections.map(row => row.relativePath);
+        recycleRequest(paths);
+    });
+}
+
+function recycleSingle(relativePath)
+{
+    if (null === relativePath || relativePath === '') return;
+    let path = decodeURIComponent(relativePath);
+    $.modal.confirm(`确认删除 ${path} 吗？`, function ()
+    {
+        recycleRequest([path]);
+    });
+}
 </script>
 </body>
 </html>
