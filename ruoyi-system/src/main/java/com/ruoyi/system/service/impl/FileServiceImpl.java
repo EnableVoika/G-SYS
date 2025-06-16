@@ -244,7 +244,15 @@ public class FileServiceImpl implements FileService
                 recycleInfo.setUserId(_UserId);
                 recycleInfo.setOriginalFileName(originalFile.getName());
                 recycleInfo.setOriginalRelativePath(path);
-                recycleInfo.setRecycleRelativePath(recycleFileRelativeFile.getPath());
+                String osName = System.getProperty("os.name");
+                if (osName.toLowerCase().startsWith("windows") || osName.toLowerCase().startsWith("win"))
+                {
+                    recycleInfo.setRecycleRelativePath(uuid + path);
+                }
+                else
+                {
+                    recycleInfo.setRecycleRelativePath(uuid + "/" + path);
+                }
                 recycleInfo.setDeletedAt(deletedAt);
 
                 Files.move(originalPath, recycleFileRelativeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);

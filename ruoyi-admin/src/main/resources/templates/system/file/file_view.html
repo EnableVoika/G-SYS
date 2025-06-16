@@ -385,9 +385,9 @@
         8:  { icon: 'fa-file-archive',   color: '#bf360c' },     // RAR
         9:  { icon: 'fa-file-archive',   color: '#8d6e63' },     // 7Z
         10: { icon: 'fa-file-archive',   color: '#a1887f' },     // GZ
-        11: { icon: 'fa-file-lines',     color: '#455a64' },     // TXT
-        12: { icon: 'fa-file-lines',     color: '#90caf9' },     // YML
-        13: { icon: 'fa-file-lines',     color: '#90caf9' },     // YAML（YML样式）
+        11: { icon: 'fa-file-lines',     color: '#90caf9' },     // TXT
+        12: { icon: 'fa-file-lines',     color: '#455a64' },     // YML
+        13: { icon: 'fa-file-lines',     color: '#455a64' },     // YAML（YML样式）
         14: { icon: 'fa-file-word',      color: '#1976d2' },     // DOC
         15: { icon: 'fa-file-word',      color: '#1565c0' },     // DOCX
         16: { icon: 'fa-file-pdf',       color: '#e53935' },     // PDF
@@ -429,7 +429,13 @@
             onCheckAll: handleSelectionChange,
             onUncheckAll: handleSelectionChange,
             columns: [{
-                checkbox: true
+                checkbox: true,
+                formatter: function(value, row, index)
+                {
+                    // 返回false会隐藏checkbox，return { disabled: true } 可禁用
+                    if (row.isNewFolder) return { disabled: true, checked: false }; // 禁用新建行
+                    return undefined; // 其它行用默认
+                }
             },
             {
                 field: 'name',
@@ -699,6 +705,9 @@ function createNewFolder() {
     // 插入临时行
     data.push({ isNewFolder: true });
     $('#bootstrap-table').bootstrapTable('load', data);
+
+    // 新建时清除所有选中
+    $('#bootstrap-table').bootstrapTable('uncheckAll');
 
     setTimeout(function() {
         $('#new-folder-input').focus();
