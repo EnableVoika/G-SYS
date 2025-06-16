@@ -13,7 +13,7 @@ ruoyi:
   default_file_path: /home/iy/RcvPath
   profile: ${ruoyi.default_file_path}/gsys
   custom-folder: CustomFolder
-  trash-folder-root-path: ${ruoyi.default_file_path}/.recycle
+  recycle-folder-root-path: ${ruoyi.default_file_path}/.recycle
 
 cpp-api:
   profile: ${ruoyi.default_file_path}
