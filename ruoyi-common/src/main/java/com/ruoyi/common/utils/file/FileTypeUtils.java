@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ruoyi.common.core.domain.FileTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -171,52 +172,72 @@ public class FileTypeUtils
         return strFileExtendName;
     }
 
-    private static final Map<String, Integer> fileTypeIndexMap = new HashMap<String, Integer>() {
-        {
-            // 0: 普通文件
-            put("FILE", 0);
-            // 1: 文件夹
-            put("DIR", 1);
-            put("JPG", 2);
-            put("JPEG", 2);
-            put("GIF", 3);
-            put("PNG", 4);
-            put("BMP", 5);
-            put("ZIP", 6);
-            put("RAR", 7);
-            put("7Z", 8);
-            put("GZ", 9);
-            put("TXT", 10);
-            put("YML", 11);
-            put("YAML", 11);
-            put("DOC", 12);
-            put("DOCX", 13);
-            put("PDF", 14);
-            put("XML", 15);
-            put("MP3", 16);
-            put("MP4", 17);
-            put("WAV", 18);
-            put("FLAC", 19);
-            put("OGG", 20);
-            put("EXE", 21);
-            put("BAT", 22);
-            put("IPA", 23);
-            put("APK", 24);
-            put("CSV", 25);    // 保留25
-            put("JSON", 26);
-            put("HTML", 27);
-            put("PPT", 28);
-            put("PPTX", 29);
-            put("XLS", 30);
-            put("XLSX", 31);
-            put("SVG", 32);
-            put("MDB", 33);
-            put("LOG", 34);
+    private static final Map<String, FileTypeInfo> fileTypeIndexMap = new HashMap<String, FileTypeInfo>() {{
+        put("FILE", new FileTypeInfo(0, "文件"));
+        put("DIR", new FileTypeInfo(1, "文件夹"));
+        put("JPG", new FileTypeInfo(2, "JPG图片"));
+        put("JPEG", new FileTypeInfo(3, "JPEG图片"));
+        put("GIF", new FileTypeInfo(4, "GIF图片"));
+        put("PNG", new FileTypeInfo(5, "PNG图片"));
+        put("BMP", new FileTypeInfo(6, "BMP图片"));
+        put("ZIP", new FileTypeInfo(7, "ZIP压缩包"));
+        put("RAR", new FileTypeInfo(8, "RAR压缩包"));
+        put("7Z", new FileTypeInfo(9, "7Z压缩包"));
+        put("GZ", new FileTypeInfo(10, "GZ压缩包"));
+        put("TXT", new FileTypeInfo(11, "文本文件"));
+        put("YML", new FileTypeInfo(12, "YML配置"));
+        put("YAML", new FileTypeInfo(13, "YAML配置"));
+        put("DOC", new FileTypeInfo(14, "Word文档"));
+        put("DOCX", new FileTypeInfo(15, "Word文档"));
+        put("PDF", new FileTypeInfo(16, "PDF文档"));
+        put("XML", new FileTypeInfo(17, "XML文件"));
+        put("MP3", new FileTypeInfo(18, "MP3音频"));
+        put("MP4", new FileTypeInfo(19, "MP4视频"));
+        put("WAV", new FileTypeInfo(20, "WAV音频"));
+        put("FLAC", new FileTypeInfo(21, "FLAC音频"));
+        put("OGG", new FileTypeInfo(22, "OGG音频"));
+        put("EXE", new FileTypeInfo(23, "可执行文件"));
+        put("BAT", new FileTypeInfo(24, "批处理脚本"));
+        put("IPA", new FileTypeInfo(25, "iOS安装包"));
+        put("APK", new FileTypeInfo(26, "Android安装包"));
+        put("CSV", new FileTypeInfo(27, "CSV文件"));
+        put("JSON", new FileTypeInfo(28, "JSON文件"));
+        put("HTML", new FileTypeInfo(29, "HTML页面"));
+        put("PPT", new FileTypeInfo(30, "PPT幻灯片"));
+        put("PPTX", new FileTypeInfo(31, "PPTX幻灯片"));
+        put("XLS", new FileTypeInfo(32, "Excel表格"));
+        put("XLSX", new FileTypeInfo(33, "Excel表格"));
+        put("SVG", new FileTypeInfo(34, "SVG图像"));
+        put("MDB", new FileTypeInfo(35, "Access数据库"));
+        put("LOG", new FileTypeInfo(36, "日志文件"));
+    }};
+
+    private static final Map<Integer, String> indexToFileTypeLabelMap = new HashMap<>();
+    static {
+        for (Map.Entry<String, FileTypeInfo> entry : fileTypeIndexMap.entrySet()) {
+            int index = entry.getValue().getIndex();
+            indexToFileTypeLabelMap.putIfAbsent(index, entry.getValue().getLabel());
         }
-    };
+    }
+
 
     public static int getFileTypeIndex(String _SuffixName)
     {
-        return fileTypeIndexMap.getOrDefault(_SuffixName.toUpperCase(), -1);
+        if (com.ruoyi.common.utils.StringUtils.isNotEmpty(_SuffixName))
+            return fileTypeIndexMap.getOrDefault(_SuffixName.toUpperCase(), new FileTypeInfo(-1, "未知")).getIndex();
+        return -1;
     }
+
+    public static String getFileTypeIndexKey(int _Index)
+    {
+        String typeName = indexToFileTypeLabelMap.get(_Index);
+        return typeName == null ? "" : typeName;
+    }
+
+    public static String getFileTypeIndexLabel(int _Index)
+    {
+        String typeName = indexToFileTypeLabelMap.get(_Index);
+        return typeName == null ? "" : typeName;
+    }
+
 }

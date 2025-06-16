@@ -1,8 +1,8 @@
-package com.ruoyi.common.core.domain.dto;
+package com.ruoyi.common.core.domain.vo.system.filecontroller;
 
 import java.io.Serializable;
 
-public class RecycleInfoCondition implements Serializable
+public class RecycleVO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -20,9 +20,7 @@ public class RecycleInfoCondition implements Serializable
 
     private String recycleRelativePath;
 
-    private String deletedAtBegin;
-
-    private String deletedAtEnd;
+    private String deletedAt;
 
     public String getUuid() {
         return uuid;
@@ -80,19 +78,11 @@ public class RecycleInfoCondition implements Serializable
         this.recycleRelativePath = recycleRelativePath;
     }
 
-    public String getDeletedAtBegin() {
-        return deletedAtBegin;
+    public String getDeletedAt() {
+        return deletedAt;
     }
 
-    public void setDeletedAtBegin(String deletedAtBegin) {
-        this.deletedAtBegin = deletedAtBegin;
-    }
-
-    public String getDeletedAtEnd() {
-        return deletedAtEnd;
-    }
-
-    public void setDeletedAtEnd(String deletedAtEnd) {
-        this.deletedAtEnd = deletedAtEnd;
+    public void setDeletedAt(String deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }

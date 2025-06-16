@@ -12,6 +12,8 @@ public class RecycleInfo implements Serializable
 
     private Integer fileType;
 
+    private String typeLabel;
+
     private String originalFileName;
 
     private String originalRelativePath;
@@ -42,6 +44,14 @@ public class RecycleInfo implements Serializable
 
     public void setFileType(Integer fileType) {
         this.fileType = fileType;
+    }
+
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
     }
 
     public String getOriginalFileName() {

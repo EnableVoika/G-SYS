@@ -5,6 +5,8 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.DelFailFile;
 import com.ruoyi.common.core.domain.FileVO;
+import com.ruoyi.common.core.domain.dto.RecycleListDTO;
+import com.ruoyi.common.core.domain.vo.system.filecontroller.RecycleVO;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.exception.ServiceExcept;
@@ -40,33 +42,6 @@ public class FileController extends BaseController
     private String prefix = "system/file";
 
     /**
-     * 获取文件列表页面
-     */
-    @RequiresPermissions("system:file:view")
-    @GetMapping()
-    public String article()
-    {
-        return prefix + "/view_list";
-    }
-
-    /**
-     * 这个接口非常危险，它能操作这个项目的所有文件
-     * 除非管理员，否则建议使用用户空间接口
-     * @param dto
-     * @return
-     */
-//    @RequiresPermissions("system:file:admin_view")
-//    @PostMapping("/list")
-//    @ResponseBody
-//    public TableDataInfo admin_view_list(FileDTO dto)
-//    {
-//        if (StringUtils.isNotEmpty(dto.getPath()))
-//            dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
-//        List<FileVO> data = fileService.list(defaultFilePath, dto.getPath());
-//        return getDataTable(data);
-//    }
-
-    /**
      *
      * @param _UserHome
      * @param _AccessPath
@@ -99,6 +74,51 @@ public class FileController extends BaseController
         return check_access_path(userSpace.getCanonicalPath(), _AccessPath, _Throw);
     }
 
+    /**
+     * 获取文件列表页面
+     */
+    @RequiresPermissions("system:file:view")
+    @GetMapping()
+    public String file_view()
+    {
+        return prefix + "/file_view";
+    }
+
+    /**
+     * 获取回收站页面
+     */
+    @RequiresPermissions("system:file:view")
+    @GetMapping("/recycle_view")
+    public String recycle_view()
+    {
+        return prefix + "/recycle_view";
+    }
+
+    @RequiresPermissions("system:file:view")
+    @PostMapping("/recycle_list")
+    @ResponseBody
+    public TableDataInfo recycle_list(RecycleListDTO _Dto)
+    {
+        List<RecycleVO> data = fileService.recycleList(_Dto);
+        return getDataTable(data);
+    }
+
+    /**
+     * 这个接口非常危险，它能操作这个项目的所有文件
+     * 除非管理员，否则建议使用用户空间接口
+     * @param dto
+     * @return
+     */
+//    @RequiresPermissions("system:file:admin_view")
+//    @PostMapping("/list")
+//    @ResponseBody
+//    public TableDataInfo admin_view_list(FileDTO dto)
+//    {
+//        if (StringUtils.isNotEmpty(dto.getPath()))
+//            dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
+//        List<FileVO> data = fileService.list(defaultFilePath, dto.getPath());
+//        return getDataTable(data);
+//    }
 
     /**
      * 获取文件列表

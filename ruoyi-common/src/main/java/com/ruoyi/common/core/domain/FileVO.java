@@ -32,6 +32,8 @@ public class FileVO
     // 文件还是文件夹 0=文件 1=文件夹
     private int type;
 
+    private String typeLabel;
+
     public String getName() {
         return name;
     }
@@ -102,5 +104,13 @@ public class FileVO
 
     public void setSuffixName(String suffixName) {
         this.suffixName = suffixName;
+    }
+
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
     }
 }

@@ -4,6 +4,10 @@ import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.DelFailFile;
 import com.ruoyi.common.core.domain.FileBO;
 import com.ruoyi.common.core.domain.FileVO;
+import com.ruoyi.common.core.domain.dto.RecycleInfoCondition;
+import com.ruoyi.common.core.domain.dto.RecycleListDTO;
+import com.ruoyi.common.core.domain.vo.system.filecontroller.RecycleVO;
+import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.RecycleInfo;
 import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.common.exception.ServiceExcept;
@@ -14,6 +18,7 @@ import com.ruoyi.common.utils.file.FileTypeUtils;
 import com.ruoyi.common.utils.uuid.UUID;
 import com.ruoyi.system.mapper.RecycleInfoMapper;
 import com.ruoyi.system.service.FileService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -137,7 +142,8 @@ public class FileServiceImpl implements FileService
             fileVO.setType(fileBO.getType());
             fileVO.setSuffix(fileBO.getSuffix());
             fileVO.setSuffixName(fileBO.getSuffixName());
-
+            String typeLabel = FileTypeUtils.getFileTypeIndexLabel(fileBO.getType());
+            fileVO.setTypeLabel(StringUtils.isEmpty(typeLabel) ? "未知" : typeLabel);
             fileVO.setRelativePath(fileBO.getFullName().replace(_RootPath, ""));
             fileVO.setLastPath(fileBO.getLastPath().replace(_RootPath, ""));
             data.add(fileVO);
@@ -165,36 +171,6 @@ public class FileServiceImpl implements FileService
             throw new ServiceExcept(ErrorCode.ERROR, "文件夹创建失败");
     }
 
-    private void getRecycleList(String userRecycleInfoFile, List<RecycleInfo> _List)
-    {
-        getRecycleList(new File(userRecycleInfoFile), _List);
-    }
-
-    private void getRecycleList(File userRecycleInfoFile, List<RecycleInfo> _List)
-    {
-        try (
-                FileInputStream fis = new FileInputStream(userRecycleInfoFile);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                ObjectInputStream ois = new ObjectInputStream(bis)
-        )
-        {
-            while (true)
-            {
-                try
-                {
-                    RecycleInfo info = (RecycleInfo) ois.readObject();
-                    _List.add(info);
-                }
-                catch (EOFException eof)
-                {
-                    // 读完所有对象，退出循环
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 移至回收站
@@ -243,24 +219,35 @@ public class FileServiceImpl implements FileService
                 //
                 // 确保回收站路径中间目录存在
                 Files.createDirectories(recycleFileRelativeFile.getParentFile().toPath());
-                Files.move(originalPath, recycleFileRelativeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
                 RecycleInfo recycleInfo = new RecycleInfo();
-                recycleInfo.setUuid(uuid);
-                recycleInfo.setUserId(_UserId);
-                recycleInfo.setOriginalFileName(originalFile.getName());
-                recycleInfo.setOriginalRelativePath(path);
-                recycleInfo.setRecycleRelativePath(recycleFileRelativeFile.getPath());
                 if (originalFile.isDirectory())
+                {
                     recycleInfo.setFileType(FileTypeUtils.getFileTypeIndex("DIR"));
-                else
+                    recycleInfo.setTypeLabel(FileTypeUtils.getFileTypeIndexLabel(recycleInfo.getFileType()));
+                }
+
+                else if (originalFile.isFile())
                 {
                     String suffix = FileTypeUtils.getFileType(originalFile.getName());
                     int fileTypeIndex = FileTypeUtils.getFileTypeIndex(suffix);
                     fileTypeIndex = fileTypeIndex == -1 ? FileTypeUtils.getFileTypeIndex("FILE") : fileTypeIndex;
                     recycleInfo.setFileType(fileTypeIndex);
+                    recycleInfo.setTypeLabel(FileTypeUtils.getFileTypeIndexLabel(fileTypeIndex));
                 }
+                else
+                {
+                    int fileTypeIndex = FileTypeUtils.getFileTypeIndex("UNKNOW");
+                    recycleInfo.setFileType(fileTypeIndex);
+                    recycleInfo.setTypeLabel("未知");
+                }
+                recycleInfo.setUuid(uuid);
+                recycleInfo.setUserId(_UserId);
+                recycleInfo.setOriginalFileName(originalFile.getName());
+                recycleInfo.setOriginalRelativePath(path);
+                recycleInfo.setRecycleRelativePath(recycleFileRelativeFile.getPath());
                 recycleInfo.setDeletedAt(deletedAt);
+
+                Files.move(originalPath, recycleFileRelativeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 try
                 {
                     int insertCount = recycleInfoMapper.insert(recycleInfo);
@@ -289,5 +276,24 @@ public class FileServiceImpl implements FileService
 
         }
         return delFailList;
+    }
+
+    public List<RecycleVO> recycleList(RecycleListDTO _Dto)
+    {
+        RecycleInfoCondition condition = new RecycleInfoCondition();
+        BeanUtils.copyBeanProp(condition, _Dto);
+        condition.setUserId(ShiroUtils.getUserId());
+        List<RecycleInfo> result = recycleInfoMapper.search(condition);
+        List<RecycleVO> data = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(result))
+        {
+            for (RecycleInfo recycleInfo : result)
+            {
+                RecycleVO recycleVO = new RecycleVO();
+                BeanUtils.copyBeanProp(recycleVO, recycleInfo);
+                data.add(recycleVO);
+            }
+        }
+        return data;
     }
 }

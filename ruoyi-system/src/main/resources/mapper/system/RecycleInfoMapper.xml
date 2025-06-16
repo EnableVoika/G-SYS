@@ -8,6 +8,7 @@
         <id     property="uuid"      column="uuid"      />
         <result property="userId"      column="user_id"      />
         <result property="fileType"      column="file_type"      />
+        <result property="typeLabel"      column="type_label"      />
         <result property="originalFileName"    column="original_file_name"    />
         <result property="originalRelativePath"     column="original_relative_path"     />
         <result property="recycleRelativePath"   column="recycle_relative_path"   />
@@ -15,7 +16,7 @@
     </resultMap>
 
     <sql id="selectRecycleInfo">
-        select uuid, user_id, file_type, original_file_name, original_relative_path, recycle_relative_path,deleted_at
+        select uuid, user_id, file_type, type_label, original_file_name, original_relative_path, recycle_relative_path,deleted_at
         from recycle_info
     </sql>
 
@@ -31,6 +32,9 @@
             </if>
             <if test="null != fileType">
                 and file_type = #{fileType}
+            </if>
+            <if test="null != typeLabel and typeLabel != ''">
+                and type_label like concat('%', #{typeLabel}, '%')
             </if>
             <if test="originalFileName != null and originalFileName != ''">
                 AND original_file_name LIKE CONCAT('%', #{originalFileName}, '%')
@@ -63,6 +67,7 @@
         uuid,
         user_id,
         file_type,
+        type_label,
         original_file_name,
         original_relative_path,
         recycle_relative_path,
@@ -76,6 +81,14 @@
             <choose>
                 <when test="item.fileType != null">
                     #{item.fileType, jdbcType=INTEGER}
+                </when>
+                <otherwise>
+                    NULL
+                </otherwise>
+            </choose>,
+            <choose>
+                <when test="item.typeLabel != null">
+                    #{item.typeLabel, jdbcType=VARCHAR}
                 </when>
                 <otherwise>
                     NULL
@@ -101,6 +114,7 @@
         uuid,
         user_id,
         file_type,
+        type_label,
         original_file_name,
         original_relative_path,
         recycle_relative_path,
@@ -112,6 +126,14 @@
         <choose>
             <when test="fileType != null">
                 #{fileType, jdbcType=INTEGER}
+            </when>
+            <otherwise>
+                NULL
+            </otherwise>
+        </choose>,
+        <choose>
+            <when test="typeLabel != null">
+                #{typeLabel, jdbcType=VARCHAR}
             </when>
             <otherwise>
                 NULL

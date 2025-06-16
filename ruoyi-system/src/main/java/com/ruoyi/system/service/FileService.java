@@ -3,6 +3,8 @@ package com.ruoyi.system.service;
 import com.ruoyi.common.core.domain.DelFailFile;
 import com.ruoyi.common.core.domain.FileVO;
 import com.ruoyi.common.core.domain.dto.FileDTO;
+import com.ruoyi.common.core.domain.dto.RecycleListDTO;
+import com.ruoyi.common.core.domain.vo.system.filecontroller.RecycleVO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,4 +23,6 @@ public interface FileService
     void mkdirs(String _RootPath, String relativePath);
 
     List<DelFailFile> recycle(long _UserId, List<String> _Paths) throws IOException;
+
+    List<RecycleVO> recycleList(RecycleListDTO _Dto);
 }

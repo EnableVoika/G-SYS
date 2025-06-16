@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('回收站')" />
+    <style>
+
+.file-clickable
+{
+    display: inline-flex;
+    align-items: center;
+    user-select: none;
+    gap: 6px;
+    cursor: pointer;
+    min-height: 30px;  /* 建议30-32px，和icon/font-size协调 */
+}
+
+
+.file-icon {
+    width: 26px;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.file-icon i {
+    font-size: 22px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+
+.file-text {
+    color: inherit;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    font-size: 16px;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    top: 1.3px;   /* 关键：轻微下移！ */
+}
+
+        .file-text:hover {
+            color: #1890ff;
+        }
+
+        .table-hover > tbody > tr:hover {
+            background-color: #f2f8f7 !important;
+        }
+
+
+.breadcrumb-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-right: none;
+    white-space: nowrap;
+    gap: 8px;
+    width: 60vw;
+    min-width: 500px;
+    max-width: 1100px;
+    box-sizing: border-box;
+    border-radius: 0;
+    height: 32px;    /* ↓ 从48px改成32px */
+    padding: 0 12px; /* 可稍微收窄，显得更紧凑 */
+    font-size: 13px; /* 字号略缩小更协调 */
+}
+
+
+.breadcrumb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    flex: 1;
+}
+
+
+
+.breadcrumb-bar-area {
+    display: flex;
+    align-items: stretch;
+    margin-top: 16px;
+}
+
+.breadcrumb-back,
+.breadcrumb-refresh {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    background: #fff;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    color: #333;
+    cursor: pointer;
+    width: 32px;     /* 从48px→32px */
+    height: 32px;
+    font-size: 15px;
+}
+
+.breadcrumb-back {
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    position: relative;
+    right: 1px;
+}
+
+.breadcrumb-refresh {
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    position: relative;
+    left: 1px;
+}
+
+.breadcrumb-segment:first-child {
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+}
+
+/* 如果需要“鼠标悬停按钮有底色”，可加 */
+.breadcrumb-back:hover, .breadcrumb-refresh:hover {
+    background: #e6e6e6;
+}
+
+        .breadcrumb-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumb-segment {
+            color: #1890ff;
+            cursor: pointer;
+
+
+            /* 加上这些行 */
+            max-width: 120px;         /* 设置最大宽度，避免太长撑破 */
+            overflow: hidden;         /* 溢出隐藏 */
+            text-overflow: ellipsis;  /* 超出显示省略号 */
+            white-space: nowrap;      /* 不换行 */
+        }
+        .breadcrumb-segment:hover {
+            text-decoration: underline;
+        }
+
+.breadcrumb-divider {
+    color: #999;
+    font-weight: bold;      /* 加粗 */
+    font-size: 18px;        /* 字号加大，按实际观感微调 */
+    margin: 0 2px;          /* 微调分隔符间距，可选 */
+    display: flex;          /* 保证垂直居中 */
+    align-items: center;
+}
+
+#breadcrumb-input-prefix {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    pointer-events: none;
+    font-size: 13px;
+    left: 6px;
+}
+
+.breadcrumb-input {
+    width: 100%;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: #f5f5f5;
+    height: 32px;
+    font-size: 13px;
+    padding: 2px 8px;
+    padding-left: 18px !important;
+}
+#breadcrumb-input-wrapper {
+    width: 100%;
+    height: 32px;
+    position: relative;
+}
+
+
+
+/* 通用工具栏按钮样式 */
+.action-btn {
+    height: 30px;
+    min-width: 68px;
+    padding: 2px 16px;
+    font-size: 13px;
+    line-height: 1.08;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    box-shadow: none;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    background: #e6e6e6;
+    color: #333;
+    border-color: #aaa;
+}
+
+/* “新建”按钮绿色高亮（只保留一份！） */
+.dropdown-unified:hover > .dropdown-toggle,
+.dropdown-unified.open > .dropdown-toggle {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    border-color: #4cae4c !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+
+
+
+.dropdown-menu > li > a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    white-space: nowrap;
+}
+.dropdown-menu > li > a:hover {
+    background-color: #f5f5f5;
+    color: #000;
+}
+
+/* 新建下拉框展开 */
+.btn-group:hover > .dropdown-menu {
+    display: block;
+}
+
+.dropdown-unified:hover > .dropdown-toggle .caret,
+.dropdown-unified.open > .dropdown-toggle .caret {
+    border-top-color: #fff;
+}
+.btn-group.dropdown-unified {
+    position: relative;
+}
+
+/* 新建下拉菜单 */
+.btn-group.dropdown-unified .dropdown-menu {
+    margin-top: 0 !important;
+    border-radius: 4px;
+    min-width: 100%;
+    box-shadow: none;
+    border: 1px solid #ccc !important;
+}
+
+/* 使按钮颜色变绿 */
+.btn-green-hover:hover,
+.btn-green-hover:focus {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    border-color: #4cae4c !important;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.action-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px; /* 增加与路径栏的间隔 */
+}
+
+    </style>
+    <link href="/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body class="gray-bg">
+<div class="container-div">
+
+
+    <div class="row">
+        <div class="col-sm-12 select-table table-striped">
+            <!-- 按钮组 -->
+            <div class="action-btns" style="display: flex; gap: 8px;">
+                <!-- 普通按钮 -->
+                <!-- 以后新增按钮只要加 .action-btn，自动匹配，不用动样式 -->
+                <button id="delete-selected-btn"
+                        type="button"
+                        class="btn btn-danger btn-sm action-btn"
+                        style="display: none;"
+                        onclick="recycleSelectedFiles()">
+                    <i class="fa fa-trash"></i> 删除选中
+                </button>
+            </div>
+
+            <!-- 文件列表 -->
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "system/file";
+    let isCreatingFolder = false;
+    let pathStack = [
+        { name: '根目录', path: '' }
+    ];
+    const iconMap = {
+        0:  { icon: 'fa-file',         color: '#666' },      // 普通文件
+        1:  { icon: 'fa-folder',       color: '#f4b400' },   // 文件夹
+        2:  { icon: 'fa-file-image',   color: '#29b6f6' },   // JPG/JPEG
+        3:  { icon: 'fa-file-image',   color: '#28c76f' },   // GIF
+        4:  { icon: 'fa-file-image',   color: '#00bcd4' },   // PNG
+        5:  { icon: 'fa-file-image',   color: '#bca8d8' },   // BMP
+        6:  { icon: 'fa-file-archive', color: '#ff7043' },   // ZIP
+        7:  { icon: 'fa-file-archive', color: '#bf360c' },   // RAR
+        8:  { icon: 'fa-file-archive', color: '#8d6e63' },   // 7Z
+        9:  { icon: 'fa-file-archive', color: '#a1887f' },   // GZ
+        10: { icon: 'fa-file-lines',   color: '#455a64' },   // TXT
+        11: { icon: 'fa-file-lines',   color: '#90caf9' },   // YML/YAML
+        12: { icon: 'fa-file-word',    color: '#1976d2' },   // DOC
+        13: { icon: 'fa-file-word',    color: '#1565c0' },   // DOCX
+        14: { icon: 'fa-file-pdf',     color: '#e53935' },   // PDF
+        15: { icon: 'fa-file-code',    color: '#00bcd4' },   // XML
+        16: { icon: 'fa-file-audio',   color: '#00e676' },   // MP3
+        17: { icon: 'fa-file-video',   color: '#ab47bc' },   // MP4
+        18: { icon: 'fa-file-audio',   color: '#00acc1' },   // WAV
+        19: { icon: 'fa-file-audio',   color: '#00bfae' },   // FLAC
+        20: { icon: 'fa-file-audio',   color: '#ffd600' },   // OGG
+        21: { icon: 'fa-file-alt',   color: '#43a047' },   // EXE（其实可用file-alt更好，但找不到专门的“可执行文件”）
+        22: { icon: 'fa-file-code',    color: '#bdbdbd' },   // BAT
+        23: { icon: 'fa-apple',        color: '#616161' },   // IPA（苹果App包）
+        24: { icon: 'fa-android',      color: '#a4c639' },   // APK
+        25: { icon: 'fa-file-csv',     color: '#8bc34a' },   // CSV
+        26: { icon: 'fa-file-code',    color: '#4caf50' },   // JSON
+        27: { icon: 'fa-file-code',    color: '#ffb300' },   // HTML
+        28: { icon: 'fa-file-powerpoint', color: '#ff7043' }, // PPT
+        29: { icon: 'fa-file-powerpoint', color: '#ff7043' }, // PPTX
+        30: { icon: 'fa-file-excel',   color: '#388e3c' },   // XLS
+        31: { icon: 'fa-file-excel',   color: '#388e3c' },   // XLSX
+        32: { icon: 'fa-file-image',   color: '#607d8b' },   // SVG
+        33: { icon: 'fa-database',     color: '#9c27b0' },   // MDB
+        34: { icon: 'fa-file-lines',   color: '#789262' }    // LOG
+    };
+
+    $(function()
+    {
+        var options = {
+            url: prefix + "/recycle_list",
+            showSearch: false,
+            showRefresh: false,
+            showToggle: false,
+            showColumns: false,
+            clickToSelect: true,
+            pagination: false,
+
+            onCheck: handleSelectionChange,
+            onUncheck: handleSelectionChange,
+            onCheckAll: handleSelectionChange,
+            onUncheckAll: handleSelectionChange,
+            columns: [{
+                checkbox: true
+            },
+            {
+                field: 'originalFileName',
+                title: '名称',
+                formatter: function(value, row, index)
+                {
+                    console.log(row)
+                    // 正常文件/文件夹
+                    const icon = iconMap[row.fileType] || iconMap[0];
+                    return `
+                        <div class="file-clickable" onclick="onFileClick(event, '${encodeURIComponent(row.relativePath)}')">
+                            <div class="file-icon">
+                                <i class="fa ${icon.icon}" style="color: ${icon.color};"></i>
+                            </div>
+                            <div class="file-text">
+                                ${value}
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                field : 'originalRelativePath',
+                title : '原始位置'
+            },
+            {
+                field : 'deletedAt',
+                title : '删除日期'
+            },
+            {
+                field : 'size',
+                title : '大小',
+                formatter: function(value, row, index)
+                {
+                    return (value === 0) ? '-' : value;
+                }
+            },
+            {
+                field : 'typeLabel',
+                title : '项目类型'
+            },
+            {
+                title: '操作',
+                align: 'center',
+                formatter: function(value, row, index) {
+                    var actions = [];
+                    actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="recycleSingle(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-remove"></i>删除</a>');
+                    return actions.join('');
+                }
+            }]
+        };
+        $.table.init(options);
+    });
+
+    function onFileClick(event, relativePath)
+    {
+    }
+
+    function get_list(relativePath)
+    {
+        $.post({
+            url: prefix + "/list",
+            data: { path: relativePath },
+            success: function(res) {
+                if(res.code === 0)
+                {
+                    $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
+                    setPathFromString(relativePath);
+                }
+                else
+                {
+                    $.modal.alertError(res.msg);
+                }
+                // console.log(res);
+            },
+            error: function(err) {
+                console.error("请求失败：", err);
+            }
+        });
+        $('#delete-selected-btn').hide();
+    }
+
+    function handleSelectionChange() {
+        const selections = $('#bootstrap-table').bootstrapTable('getSelections');
+        if (selections.length > 0) {
+            $('#delete-selected-btn').show();
+        } else {
+            $('#delete-selected-btn').hide();
+        }
+    }
+
+    function recycleRequest(paths)
+    {
+        $.ajax({
+            url: prefix + "/recycle",
+            type: "DELETE",
+            contentType: "application/json",
+            data: JSON.stringify({ paths: paths }), // 假设后端按 JSON 结构接收
+            success: function (res)
+            {
+                console.log(res)
+                if (res.code === 0)
+                {
+                    $.modal.alertSuccess_callback(res.msg, function ()
+                    {
+                        get_list(pathStack[pathStack.length - 1].path);
+                    },
+                    function ()
+                    {
+                        get_list(pathStack[pathStack.length - 1].path);
+                    });
+                }
+                else if(res.code === 513)
+                {
+                    $.modal.alertWarning_callback(res.msg, function ()
+                    {
+                        get_list(pathStack[pathStack.length - 1].path);
+                    },
+                    function ()
+                    {
+                        get_list(pathStack[pathStack.length - 1].path);
+                    });
+                }
+                else
+                {
+                    $.modal.alertError(res.msg || "删除失败");
+                }
+
+            },
+            error: function () {
+                $.modal.alertError("网络异常");
+            }
+        });
+    }
+
+    function recycleSelectedFiles()
+    {
+        const selections = $('#bootstrap-table').bootstrapTable('getSelections');
+        if (selections.length === 0) return;
+        $.modal.confirm(`确认删除这 ${selections.length} 项吗？`, function ()
+        {
+            const paths = selections.map(row => row.relativePath);
+            recycleRequest(paths);
+        });
+    }
+
+    function recycleSingle(relativePath)
+    {
+        if (null === relativePath || relativePath === '') return;
+        let path = decodeURIComponent(relativePath);
+        $.modal.confirm(`确认删除 ${path} 吗？`, function ()
+        {
+            recycleRequest([path]);
+        });
+    }
+
+</script>
+</body>
+</html>
