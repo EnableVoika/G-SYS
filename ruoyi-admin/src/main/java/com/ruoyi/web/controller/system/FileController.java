@@ -71,7 +71,23 @@ public class FileController extends BaseController
     }
     private String check_access_path(File userSpace, String _AccessPath, boolean _Throw) throws IOException
     {
-        return check_access_path(userSpace.getCanonicalPath(), _AccessPath, _Throw);
+        long userId = getUserId();
+        if (Constants.ADMIN_USER_ID.equals(userId))
+        {
+            return _AccessPath;
+        }
+        File baseDir = userSpace.getAbsoluteFile(); // 你的根路径
+        File userToAccessFile = new File(baseDir, _AccessPath == null ? "" : _AccessPath);
+        String canonicalBase = baseDir.getCanonicalPath();
+        String canonicalUserFile = userToAccessFile.getCanonicalPath();
+        if (!canonicalUserFile.startsWith(canonicalBase))
+        {
+            if (_Throw)
+                throw new ServiceExcept("非法访问");
+            // 目录越界，强行拉回用户根目录
+            return "";
+        }
+        return _AccessPath;
     }
 
     /**
@@ -128,7 +144,7 @@ public class FileController extends BaseController
     @RequiresPermissions("system:file:view")
     @PostMapping("/list")
     @ResponseBody
-    public TableDataInfo user_view_list(FileDTO dto) throws IOException {
+    public TableDataInfo file_view_list(FileDTO dto) throws IOException {
         if (StringUtils.isNotEmpty(dto.getPath()))
             dto.setPath((dto.getPath().startsWith("/") || dto.getPath().startsWith("\\")) ? dto.getPath() : ( "/" + dto.getPath()));
         long userId = ShiroUtils.getUserId();
