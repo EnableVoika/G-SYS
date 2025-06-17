@@ -70,6 +70,7 @@
     height: 32px;    /* ↓ 从48px改成32px */
     padding: 0 12px; /* 可稍微收窄，显得更紧凑 */
     font-size: 13px; /* 字号略缩小更协调 */
+    overflow: hidden;
 }
 
 
@@ -607,6 +608,13 @@ function updateBreadcrumbBar()
     const wrapper = document.querySelector('.breadcrumb-wrapper');
     let maxWidth = wrapper.offsetWidth || 400;  // PC下给大一点兜底
 
+
+    // 刷新按钮（右边那个）
+    const refreshBtn = document.querySelector('.breadcrumb-refresh');
+    if (refreshBtn) {
+        maxWidth = maxWidth - refreshBtn.offsetWidth - 10; // 留点间隔
+    }
+
     // ========== 移动端部分（保留你的实现） ==========
     if (window.innerWidth <= 600)
     {
@@ -731,7 +739,7 @@ function updateBreadcrumbBar()
         for (let i = widths.length - 2; i >= 0; i -= 2) {
             let w_seg = widths[i - 1] || 0;
             let w_div = widths[i] || 0;
-            if (totalWidth + w_seg + w_div > maxWidth - 60) break; // 预留省略号宽度（PC可略大如60）
+            if (totalWidth + w_seg + w_div > maxWidth - 80) break; // 预留省略号宽度（PC可略大如60）
             totalWidth += w_seg + w_div;
             startIdx--;
         }
