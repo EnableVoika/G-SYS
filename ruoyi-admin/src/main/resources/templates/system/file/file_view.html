@@ -280,6 +280,71 @@
     margin-top: 18px; /* 增加与路径栏的间隔 */
 }
 
+@media (max-width: 600px) {
+
+    /* 路径栏整体收紧、无横向滚动 */
+    .breadcrumb-wrapper {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 28px !important;      /* 跟PC缩小一点，28px更贴合 */
+        font-size: 12px !important;
+        padding: 0 4px !important;
+        border-radius: 0 !important;
+    }
+    .breadcrumb-bar,
+    .breadcrumb-left {
+        min-width: 0 !important;
+        font-size: 12px !important;
+        gap: 4px !important;
+    }
+    .breadcrumb-segment {
+        max-width: 68px !important;    /* 路径每段最长68px，超出省略号 */
+        font-size: 12px !important;
+        padding: 0 2px !important;
+    }
+    .breadcrumb-divider {
+        font-size: 15px !important;
+        margin: 0 1px !important;
+    }
+    .breadcrumb-back,
+    .breadcrumb-refresh {
+        height: 28px !important;
+        width: 28px !important;
+        font-size: 13px !important;
+        line-height: 28px !important;
+        padding: 0 !important;
+        border-radius: 4px !important;
+        margin: 0 !important;
+    }
+
+    /* Action按钮组收紧，只控制 action-btn，不动表格和其它 */
+    .action-btns {
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+        margin-top: 8px !important;
+    }
+    .action-btn,
+    .action-btn.btn-green-hover,
+    .btn-danger.action-btn {
+        height: 26px !important;
+        min-width: 56px !important;
+        font-size: 12px !important;
+        padding: 1px 8px !important;
+        border-radius: 4px !important;
+    }
+    .dropdown-menu > li > a {
+        font-size: 12px !important;
+        padding: 5px 10px !important;
+    }
+    /* 新建下拉按钮的 caret 箭头保持大小 */
+    .dropdown-toggle .caret {
+        margin-left: 4px !important;
+        border-width: 4px 4px 0 4px !important;
+    }
+}
+
+
     </style>
     <link href="/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
