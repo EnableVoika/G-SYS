@@ -683,6 +683,11 @@
                     const last = pathStack[pathStack.length - 1];
                     get_list(last.path);
                 });
+                // 禁止冒泡到上面（弹窗内点不立即关闭）
+                document.getElementById('breadcrumb-ellipsis-popup').onclick = function(e)
+                {
+                    e.stopPropagation();
+                };
             });
 
         // 主路径栏渲染
@@ -703,10 +708,87 @@ function updateBreadcrumbBar()
     // 移动端保留原逻辑
     if (window.innerWidth <= 600)
     {
-        // ...【你的移动端部分保留，不变】...
-        // === 略 ===
-        // （省略此处，你的原有逻辑就行）
-        // === 略 ===
+        // 先测量每个segment宽度
+        const temp = document.createElement('div');
+        temp.style.visibility = 'hidden';
+        temp.style.position = 'absolute';
+        temp.style.zIndex = -1;
+        temp.style.whiteSpace = 'nowrap';
+        temp.style.display = 'flex';
+        document.body.appendChild(temp);
+
+        const widths = [];
+        pathStack.forEach((seg, i) => {
+            const segDiv = document.createElement('div');
+            segDiv.className = 'breadcrumb-segment';
+            segDiv.textContent = seg.name;
+            temp.appendChild(segDiv);
+            widths.push(segDiv.offsetWidth);
+            // 分隔符也要算宽
+            if (i < pathStack.length - 1) {
+                const divider = document.createElement('div');
+                divider.className = 'breadcrumb-divider';
+                divider.textContent = '>';
+                temp.appendChild(divider);
+                widths.push(divider.offsetWidth);
+            }
+        });
+
+        document.body.removeChild(temp);
+
+        // 保证最后一个segment始终显示
+        let totalWidth = 0;
+        let startIdx = pathStack.length - 1;
+        // 最后一个segment
+        totalWidth += widths[widths.length - 1];
+        // 逆序累加前面的segment+divider宽度，直到超maxWidth-40（预留省略号宽度）
+        for (let i = widths.length - 2; i >= 0; i -= 2) { // 每次处理segment+divider
+            let w_seg = widths[i - 1] || 0;
+            let w_div = widths[i] || 0;
+            if (totalWidth + w_seg + w_div > maxWidth - 40) break;
+            totalWidth += w_seg + w_div;
+            startIdx--;
+        }
+
+        // 是否有隐藏
+        if (startIdx > 0)
+        {
+            // 加省略号
+            const ellipsis = document.createElement('div');
+            ellipsis.className = 'breadcrumb-segment';
+            ellipsis.textContent = '«';
+            ellipsis.onclick = () => {
+                updateBreadcrumbBarFull();
+            };
+            container.appendChild(ellipsis);
+        } else {
+            startIdx = 0;
+        }
+
+        // 渲染可见的segment
+        for (let i = startIdx; i < pathStack.length; i++)
+        {
+            const seg = pathStack[i];
+            const partDiv = document.createElement('div');
+            partDiv.className = 'breadcrumb-segment';
+            partDiv.textContent = seg.name;
+
+            partDiv.onclick = (e) => {
+                e.stopPropagation();
+                pathStack = pathStack.slice(0, i + 1);
+                updateBreadcrumbBar();
+                get_list(seg.path);
+            };
+            container.appendChild(partDiv);
+
+            if (i < pathStack.length - 1) {
+                const divider = document.createElement('div');
+                divider.className = 'breadcrumb-divider';
+                divider.textContent = '>';
+                divider.onclick = (e) => e.stopPropagation();
+                container.appendChild(divider);
+            }
+        }
     }
     // PC端
     else
@@ -943,11 +1025,6 @@ document.addEventListener('click', function(e)
 {
     hideBreadcrumbEllipsisPopup();
 });
-// 禁止冒泡到上面（弹窗内点不立即关闭）
-document.getElementById('breadcrumb-ellipsis-popup').onclick = function(e)
-{
-    e.stopPropagation();
-};
 
 
             // 解析路径字符串并更新 pathStack

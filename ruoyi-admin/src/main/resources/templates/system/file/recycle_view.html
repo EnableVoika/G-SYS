@@ -436,13 +436,12 @@
     function get_list(relativePath)
     {
         $.post({
-            url: prefix + "/list",
+            url: prefix + "/recycle_list",
             data: { path: relativePath },
             success: function(res) {
                 if(res.code === 0)
                 {
                     $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
-                    setPathFromString(relativePath);
                 }
                 else
                 {
