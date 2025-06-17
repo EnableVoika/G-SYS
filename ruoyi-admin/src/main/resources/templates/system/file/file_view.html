@@ -668,6 +668,21 @@
                 };
                 $.table.init(options);
                 updateBreadcrumbBar();
+                // 注册返回
+                $('#breadcrumb-back').off('click').on('click', function() {
+                    if (pathStack.length > 1) {
+                        pathStack.pop();
+                        updateBreadcrumbBar();
+                        const last = pathStack[pathStack.length - 1];
+                        get_list(last.path);
+                    }
+                });
+
+                // 注册刷新
+                $('#breadcrumb-refresh').off('click').on('click', function() {
+                    const last = pathStack[pathStack.length - 1];
+                    get_list(last.path);
+                });
             });
 
         // 主路径栏渲染
@@ -953,19 +968,6 @@ document.getElementById('breadcrumb-ellipsis-popup').onclick = function(e)
 
                 updateBreadcrumbBar();
             }
-
-            document.getElementById('breadcrumb-back').onclick = () => {
-                if (pathStack.length > 1) {
-                    pathStack.pop();
-                    updateBreadcrumbBar();
-                    const last = pathStack[pathStack.length - 1];
-                    get_list(last.path);
-                }
-            };
-            document.getElementById('breadcrumb-refresh').onclick = () => {
-                const last = pathStack[pathStack.length - 1];
-                get_list(last.path); // 重新请求当前路径
-            };
 
 
 
