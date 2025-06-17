@@ -68,7 +68,7 @@
         box-sizing: border-box;
         border-radius: 0;
         height: 32px;    /* ↓ 从48px改成32px */
-        padding: 0 12px; /* 可稍微收窄，显得更紧凑 */
+        padding: 0 24px 0 12px;  /* 右侧多留12px */
         font-size: 13px; /* 字号略缩小更协调 */
         overflow: hidden;
     }
@@ -450,6 +450,7 @@
     transition: box-shadow 0.2s;
     /* 阴影参考antd select下拉 */
 }
+
         </style>
         <link href="/css/all.min.css" rel="stylesheet">
         <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -698,11 +699,12 @@ function updateBreadcrumbBar()
 
     // 计算可用宽度
     const wrapper = document.querySelector('.breadcrumb-wrapper');
+
     let maxWidth = wrapper.offsetWidth || 400;
     const refreshBtn = document.querySelector('.breadcrumb-refresh');
     if (refreshBtn)
     {
-        maxWidth = maxWidth - refreshBtn.offsetWidth - 10;
+        maxWidth = maxWidth - refreshBtn.offsetWidth - 10 - 40; // 再减去40px右间距
     }
 
     // 移动端保留原逻辑
@@ -829,7 +831,7 @@ function updateBreadcrumbBar()
         {
             let w_seg = widths[i - 1] || 0;
             let w_div = widths[i] || 0;
-            if (totalWidth + w_seg + w_div > maxWidth - 80) break;
+            if (totalWidth + w_seg + w_div > maxWidth - 120) break; // 原来-80，改成-120
             totalWidth += w_seg + w_div;
             startIdx--;
         }
