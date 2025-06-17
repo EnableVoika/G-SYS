@@ -153,7 +153,12 @@
         )
     </insert>
 
-    <delete id="delByUUID" parameterType="list">
+    <delete id="delByUUID" parameterType="string">
+        DELETE FROM recycle_info
+        WHERE uuid = #{uuid}
+    </delete>
+
+    <delete id="delByUUIDs" parameterType="list">
         DELETE FROM recycle_info
         WHERE uuid IN
         <foreach collection="list" item="uuid" open="(" separator="," close=")">

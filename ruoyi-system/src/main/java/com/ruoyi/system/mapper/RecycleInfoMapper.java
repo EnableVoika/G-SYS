@@ -16,5 +16,7 @@ public interface RecycleInfoMapper
 
     int insert(RecycleInfo recycleInfo);
 
-    int delByUUID(List<String> list);
+    int delByUUID(@Param("uuid") String _UUID);
+
+    int delByUUIDs(List<String> list);
 }

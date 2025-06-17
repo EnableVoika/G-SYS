@@ -4,9 +4,29 @@ import java.util.List;
 
 public class FileDTO
 {
+    private String uuid;
+
+    private List<String> uuids;
+
     private String path;
 
     private List<String> paths;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public List<String> getUuids() {
+        return uuids;
+    }
+
+    public void setUuids(List<String> uuids) {
+        this.uuids = uuids;
+    }
 
     public String getPath()
     {

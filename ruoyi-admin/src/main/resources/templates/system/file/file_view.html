@@ -1207,7 +1207,7 @@ document.addEventListener('click', function(e)
                 data: JSON.stringify({ paths: paths }), // 假设后端按 JSON 结构接收
                 success: function (res)
                 {
-                    console.log(res)
+                    // console.log(res)
                     if (res.code === 0)
                     {
                         $.modal.alertSuccess_callback(res.msg, function ()

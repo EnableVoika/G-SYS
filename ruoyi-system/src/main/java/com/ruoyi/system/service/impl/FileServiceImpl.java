@@ -23,12 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService
@@ -177,6 +182,7 @@ public class FileServiceImpl implements FileService
      * 必须得重命名一个文件夹，写一个进list里，尽可能保证原子操作
      * @param _Paths
      */
+    @Transactional
     public List<DelFailFile> recycle(long _UserId, List<String> _Paths) throws IOException
     {
         String userHome = getUserHome(_UserId);
@@ -216,7 +222,6 @@ public class FileServiceImpl implements FileService
 
                 // 把文件准备写进uuid路径里
                 File recycleFileRelativeFile = new File(uuidPath.toFile(), path);
-                //
                 // 确保回收站路径中间目录存在
                 Files.createDirectories(recycleFileRelativeFile.getParentFile().toPath());
                 RecycleInfo recycleInfo = new RecycleInfo();
@@ -254,20 +259,9 @@ public class FileServiceImpl implements FileService
                     recycleInfo.setRecycleRelativePath(uuid + "/" + path);
                 }
                 recycleInfo.setDeletedAt(deletedAt);
-
+                // 如果移动出现异常，直接走到catch，同时ql也不会插入，后续Files.move也不会执行
+                recycleInfoMapper.insert(recycleInfo);
                 Files.move(originalPath, recycleFileRelativeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                try
-                {
-                    int insertCount = recycleInfoMapper.insert(recycleInfo);
-                    // 记录插入失败的sql，用于后续补偿操作
-                    if (insertCount == 0)
-                    {
-
-                    }
-                }catch (Exception e)
-                {
-                    log.error("用户userId={},回收站uuid={} originalPath={} 文件已经删除, 但sql插入失败, 请及时检查问题并修复", _UserId, uuid, path, e);
-                }
             }
             catch (AccessDeniedException e)
             {
@@ -303,5 +297,73 @@ public class FileServiceImpl implements FileService
             }
         }
         return data;
+    }
+
+    public List<DelFailFile> permanentDels(Set<String> _UUIDs)
+    {
+        List<DelFailFile> delFailList = new ArrayList<>();
+        Long userId = ShiroUtils.getUserId();
+        for (String uuid : _UUIDs)
+        {
+            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
+            if (null == recycleInfo)
+            {
+                // 记录失败的uuid
+                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
+                delFailList.add(delFailFile);
+                continue;
+            }
+            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
+                throw new ServiceExcept("你无权删除其他人的文件");
+            AtomicBoolean success = new AtomicBoolean(true);
+            try
+            {
+                Path userRecycleSpacePath = Path.of(recycleFolderRootPath, String.valueOf(userId));
+                Path recycleFileFullPath = Path.of(userRecycleSpacePath.toString(), uuid);
+                // 递归删除目录及所有内容
+                try (Stream<Path> stream = Files.walk(recycleFileFullPath))
+                {
+                    stream.sorted(Comparator.reverseOrder()).forEach(path ->
+                    {
+                        try
+                        {
+                            Files.delete(path);
+                        } catch (IOException e)
+                        {
+                            success.set(false);
+                            log.error("uuid={}, 路径={} 删除失败, 失败原因: ", uuid, path, e);
+                            DelFailFile delFailFile = new DelFailFile(uuid, path + "删除失败, 失败原因: " + e.getMessage());
+                            delFailList.add(delFailFile);
+                        }
+                    });
+                }
+            }
+            catch (NoSuchFileException e)
+            {
+                success.set(false);
+                log.error("{} 删除失败, 失败原因: {}", uuid, "没有找到该uuid对应的路径", e);
+                DelFailFile delFailFile = new DelFailFile(uuid, "没有找到该文件, 该文件不在回收站或者路径错误");
+                delFailList.add(delFailFile);
+            }
+            catch (Exception e)
+            {
+                success.set(false);
+                log.error("{} 删除失败, 失败原因: ", uuid, e);
+                DelFailFile delFailFile = new DelFailFile(uuid, e.getMessage());
+                delFailList.add(delFailFile);
+            }
+            if (success.get())
+            {
+                try
+                {
+                    recycleInfoMapper.delByUUID(uuid);
+                } catch (Exception e)
+                {
+                    log.error("{} 数据库记录删除失败, 失败原因: ", uuid, e);
+                    delFailList.add(new DelFailFile(uuid, "数据库记录删除失败: " + e.getMessage()));
+                }
+            }
+        }
+        return delFailList;
     }
 }

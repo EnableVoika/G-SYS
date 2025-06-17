@@ -9,6 +9,7 @@ import com.ruoyi.common.core.domain.vo.system.filecontroller.RecycleVO;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 public interface FileService
 {
@@ -25,4 +26,6 @@ public interface FileService
     List<DelFailFile> recycle(long _UserId, List<String> _Paths) throws IOException;
 
     List<RecycleVO> recycleList(RecycleListDTO _Dto);
+
+    List<DelFailFile> permanentDels(Set<String> _UUIDs);
 }

@@ -14,6 +14,7 @@ import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.service.FileService;
 import com.ruoyi.common.core.domain.dto.FileDTO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -23,7 +24,9 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/system/file")
@@ -233,6 +236,33 @@ public class FileController extends BaseController
             return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件未能删除", delFailFileList);
         }
         return AjaxResult.ok("删除成功, 你可以到回收站里查看");
+    }
+
+    @RequiresPermissions("system:file:remove")
+    @DeleteMapping("/permanent")
+    @ResponseBody
+    public AjaxResult permanentDel(@RequestBody FileDTO _Dto)
+    {
+        Set<String> uuids = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(_Dto.getUuids()))
+        {
+            for (String uuid : _Dto.getUuids())
+            {
+                uuids.add(uuid);
+            }
+        }
+        if (StringUtils.isNotEmpty(_Dto.getUuid()))
+            uuids.add(_Dto.getUuid());
+        if (CollectionUtils.isEmpty(uuids))
+            throw new ServiceExcept("文件路径id不能为空");
+        List<DelFailFile> delFailFiles = fileService.permanentDels(uuids);
+        if (CollectionUtils.isNotEmpty(delFailFiles))
+        {
+            if (delFailFiles.size() == uuids.size())
+                return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "文件删除失败", delFailFiles);
+            return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件删除失败", delFailFiles);
+        }
+        return AjaxResult.ok("文件删除成功");
     }
 
 }
