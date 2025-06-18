@@ -14,6 +14,7 @@ import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.common.utils.file.FileTypeUtils;
+import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.common.utils.uuid.UUID;
 import com.ruoyi.system.domain.RecycleInfo;
 import com.ruoyi.system.mapper.RecycleInfoMapper;
@@ -50,54 +51,6 @@ public class FileServiceImpl implements FileService
 
     @Resource
     private RecycleInfoMapper recycleInfoMapper;
-
-    /**
-     * 递归收集root下所有叶子路径（相对root的路径）。
-     * 所有相对路径保证无开头"/"或"\"，且分隔符全部为"/"。
-     * @param resultList 输出结果（相对路径字符串，分隔符全为/）
-     * @param root       根目录
-     * @param relative   当前递归相对路径，可传"c/d"、"/c/d"、"\c\d"等任意风格
-     */
-    public static void collectLeafPaths(List<String> resultList, Path root, String relative) throws IOException
-    {
-        // 1. 规范化传入的相对路径
-        String relNorm = relative.replaceAll("^[\\\\/]+", "")   // 去掉所有开头的斜杠
-                .replace("\\", "/");           // 统一分隔符
-        Path relPath = relNorm.isEmpty() ? Paths.get("") : Paths.get(relNorm);
-        Path absPath = root.resolve(relPath);
-
-        // 2. 判断叶子并收集
-        if (Files.isRegularFile(absPath) || isEmptyDir(absPath)) {
-            // 规范化list里所有路径
-            String addPath = relPath.toString().replace("\\", "/");
-            resultList.add(addPath);
-            return;
-        }
-
-        // 3. 递归目录
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(absPath)) {
-            for (Path child : stream) {
-                // 递归时拼接新相对路径，并传递字符串格式
-                String childRel = relNorm.isEmpty()
-                        ? child.getFileName().toString()
-                        : relNorm + "/" + child.getFileName().toString();
-                collectLeafPaths(resultList, root, childRel);
-            }
-        }
-    }
-
-    public static void collectLeafPaths(List<String> _ResultList, String _Root, String _Relative) throws IOException {
-        Path root = Path.of(_Root);
-        collectLeafPaths(_ResultList, root, _Relative);
-    }
-
-    // 判断是不是空目录
-    private static boolean isEmptyDir(Path dir) throws IOException {
-        if (!Files.isDirectory(dir)) return false;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            return !stream.iterator().hasNext();
-        }
-    }
 
     /**
      * 末尾不带 "/"
@@ -223,186 +176,12 @@ public class FileServiceImpl implements FileService
             throw new ServiceExcept(ErrorCode.ERROR, "文件夹创建失败");
     }
 
-
-    /**
-     * 移至回收站
-     * 必须得重命名一个文件夹，写一个进list里，尽可能保证原子操作
-     * @param _Paths
-     */
-//    @Transactional
-//    public List<DelFailFile> recycle(long _UserId, List<String> _Paths) throws IOException
-//    {
-//        String userHome = getUserHome(_UserId);
-//        String deletedAt = DateUtils.dateTimeNow();
-//        List<DelFailFile> delFailList = new ArrayList<>();
-//        File userRecycleSpace = new File(recycleFolderRootPath, String.valueOf(_UserId));
-//        if (!userRecycleSpace.exists())
-//        {
-//            try
-//            {
-//                Files.createDirectories(userRecycleSpace.toPath());
-//            }
-//            catch(Exception e)
-//            {
-//                log.error("用户{userId={}}创建回收站失败, 异常原因: ", _UserId, e);
-//                throw new ServiceExcept("删除失败, 请联系管理员, 一个文件都没删除");
-//            }
-//        }
-//        // 把文件移动到用户专属回收站空间里
-//        for (String path : _Paths)
-//        {
-//            try
-//            {
-//                File originalFile = new File(userHome, path);
-//                if (!originalFile.exists())
-//                {
-//                    DelFailFile delFailFile = new DelFailFile(path, "文件不存在");
-//                    delFailList.add(delFailFile);
-//                    continue;
-//                }
-//                // 本次删除记录的uuid，同时也是文件夹名字
-//                String uuid =  UUID.randomUUID().toString();
-//                Path originalPath = originalFile.toPath();
-//                File uuidFilePath = new File(userRecycleSpace, uuid);
-//                // 创建本次删除记录的uuid文件夹
-//                Path uuidPath = Files.createDirectories(uuidFilePath.toPath());
-//
-//                // 把文件准备写进uuid路径里
-//                File recycleFileRelativeFile = new File(uuidPath.toFile(), path);
-//                // 确保回收站路径中间目录存在
-//                Files.createDirectories(recycleFileRelativeFile.getParentFile().toPath());
-//                RecycleInfo recycleInfo = new RecycleInfo();
-//                if (originalFile.isDirectory())
-//                {
-//                    recycleInfo.setFileType(FileTypeUtils.getFileTypeIndex("DIR"));
-//                    recycleInfo.setTypeLabel(FileTypeUtils.getFileTypeIndexLabel(recycleInfo.getFileType()));
-//                }
-//
-//                else if (originalFile.isFile())
-//                {
-//                    String suffix = FileTypeUtils.getFileType(originalFile.getName());
-//                    int fileTypeIndex = FileTypeUtils.getFileTypeIndex(suffix);
-//                    fileTypeIndex = fileTypeIndex == -1 ? FileTypeUtils.getFileTypeIndex("FILE") : fileTypeIndex;
-//                    recycleInfo.setFileType(fileTypeIndex);
-//                    recycleInfo.setTypeLabel(FileTypeUtils.getFileTypeIndexLabel(fileTypeIndex));
-//                }
-//                else
-//                {
-//                    int fileTypeIndex = FileTypeUtils.getFileTypeIndex("UNKNOW");
-//                    recycleInfo.setFileType(fileTypeIndex);
-//                    recycleInfo.setTypeLabel("未知");
-//                }
-//                recycleInfo.setUuid(uuid);
-//                recycleInfo.setUserId(_UserId);
-//                recycleInfo.setOriginalFileName(originalFile.getName());
-//                recycleInfo.setOriginalRelativePath(path);
-//                String osName = System.getProperty("os.name");
-//                if (osName.toLowerCase().startsWith("windows") || osName.toLowerCase().startsWith("win"))
-//                {
-//                    recycleInfo.setRecycleRelativePath(uuid + path);
-//                }
-//                else
-//                {
-//                    recycleInfo.setRecycleRelativePath(uuid + "/" + path);
-//                }
-//                recycleInfo.setDeletedAt(deletedAt);
-//                // 如果移动出现异常，直接走到catch，同时ql也不会插入，后续Files.move也不会执行
-//                recycleInfoMapper.insert(recycleInfo);
-//                Files.move(originalPath, recycleFileRelativeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//            }
-//            catch (AccessDeniedException e)
-//            {
-//                log.error("{} 重命名失败, 目标正在被占用, 具体失败原因: ", path, e);
-//                DelFailFile delFailFile = new DelFailFile(path, "文件正在被占用, 删除失败");
-//                delFailList.add(delFailFile);
-//            }
-//            catch(Exception e)
-//            {
-//                log.error("{} 重命名失败, 失败原因: ", path, e);
-//                DelFailFile delFailFile = new DelFailFile(path, "文件删除失败");
-//                delFailList.add(delFailFile);
-//            }
-//
-//        }
-//        return delFailList;
-//    }
-
     private Path getUserRecycleSpace(long _UserId)
     {
         return Path.of(recycleFolderRootPath, String.valueOf(_UserId));
     }
 
-    public static void deleteEmptyDirsRecursively(Path dir) throws IOException {
-        if (!Files.isDirectory(dir)) return;
-        // 递归处理所有子目录
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            for (Path child : stream) {
-                deleteEmptyDirsRecursively(child);
-            }
-        }
-        // 尝试删除本目录（只会删掉空目录）
-        try {
-            Files.delete(dir); // 只有空目录才能删掉，不会误删有内容的目录
-        } catch (DirectoryNotEmptyException ignore) {
-            // 有内容就跳过
-        }
-    }
 
-    /**
-     * 递归清理 rootDir 及其所有子目录下的空目录。
-     * 如遇有文件，记录日志并跳过。
-     * @param rootDir 待清理的目录
-     * @return 返回未能删除的目录（目录下有文件）
-     */
-    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, Path rootDir) throws IOException {
-        List<Path> undeletedDirs = new ArrayList<>();
-        cleanEmptyDirsInternal(_DelFailList, rootDir, undeletedDirs);
-        return undeletedDirs;
-    }
-
-    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, String _Root, String relative) throws IOException {
-        Path fullPath = Path.of(_Root, relative);
-        List<Path> undeletedDirs = new ArrayList<>();
-        cleanEmptyDirsInternal(_DelFailList, fullPath, undeletedDirs);
-        return undeletedDirs;
-    }
-
-    // 内部递归函数
-    private static boolean cleanEmptyDirsInternal(List<DelFailFile> _DelFailList, Path dir, List<Path> undeletedDirs) throws IOException {
-        if (!Files.isDirectory(dir))
-            return false;
-        boolean canDelete = true;
-
-        // 检查子目录和文件
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            for (Path child : stream) {
-                if (Files.isDirectory(child)) {
-                    boolean subDirCanDelete = cleanEmptyDirsInternal(_DelFailList, child, undeletedDirs);
-                    if (!subDirCanDelete) canDelete = false;
-                } else {
-                    // 有文件就不能删
-                    canDelete = false;
-                }
-            }
-        }
-
-        if (canDelete) {
-            try {
-                Files.delete(dir);
-                // System.out.println("删除空目录：" + dir);
-            } catch (IOException e) {
-                undeletedDirs.add(dir);
-                // System.err.println("无法删除空目录 " + dir + "，异常：" + e.getMessage());
-                return false;
-            }
-            return true;
-        } else {
-            undeletedDirs.add(dir); // 目录下还有文件
-            // System.err.println("目录下还有文件，不能删除: " + dir);
-            _DelFailList.add(new DelFailFile(dir.toString(), "还有文件，可能之前移动失败，因此该路径无法删除"));
-            return false;
-        }
-    }
 
 
     private void _recycle(List<DelFailFile> _DelFailList, long _UserId, String _Original_Root, String _Original_Relative, String _DeletedAt) throws IOException {
@@ -431,14 +210,15 @@ public class FileServiceImpl implements FileService
             }
 
             // 获取_Group_OriginalRelativePath下的所有叶子路径
-            collectLeafPaths(allSonPathStrs, _Original_Root, _Original_Relative);
+            FileUtils.collectLeafPaths(allSonPathStrs, _Original_Root, _Original_Relative);
             // group_uuid, 同时也是回收站对应的文件夹名字
             String groupUUID =  UUID.randomUUID().toString();
             // 展示回收站列表用的
             String groupName = topPath.getFileName().toString();
             // 用户专属回收站空间绝对地址
             Path userRecycleSpace = getUserRecycleSpace(_UserId);
-
+            // 存放删除成功的记录
+            List<RecycleInfo> insertData = new ArrayList<>();
             // 遍历每一个叶子节点
             for (String sonPathStr : allSonPathStrs)
             {
@@ -483,14 +263,6 @@ public class FileServiceImpl implements FileService
                 recycleInfo.setRelativeTopType(topType);
                 recycleInfo.setRelativeTopTypeLabel(topTypeLabel);
                 String osName = System.getProperty("os.name");
-//                if (osName.toLowerCase().startsWith("windows") || osName.toLowerCase().startsWith("win"))
-//                {
-//                    recycleInfo.setRecycleRelativePath(uuid + "\\" + sonPathStr);
-//                }
-//                else
-//                {
-//                    recycleInfo.setRecycleRelativePath(uuid + "/" + sonPathStr);
-//                }
                 recycleInfo.setRecycleRelativePath(Path.of(groupUUID, sonPathStr).toString());
                 recycleInfo.setDeletedAt(_DeletedAt);
 
@@ -519,10 +291,14 @@ public class FileServiceImpl implements FileService
                     _DelFailList.add(delFailFile);
                     continue;
                 }
-                recycleInfoMapper.insert(recycleInfo);
+                // 一个个插入效率有点慢
+//                recycleInfoMapper.insert(recycleInfo);
+                insertData.add(recycleInfo);
             }
+            // 打总插入
+            recycleInfoMapper.insert_batch(insertData);
             // 清空空目录
-            cleanEmptyDirs(_DelFailList, topPath);
+            FileUtils.cleanEmptyDirs(_DelFailList, topPath);
         }
         catch(Exception e)
         {
@@ -590,6 +366,7 @@ public class FileServiceImpl implements FileService
         RecycleInfoCondition condition = new RecycleInfoCondition();
         condition.setUserId(_UserId);
         Path userRecycleSpace = getUserRecycleSpace(_UserId);
+        List<String> delData = new ArrayList<>();
         for (String groupUUID : _GroupUUIDs)
         {
             condition.setGroupUuid(groupUUID);
@@ -607,17 +384,19 @@ public class FileServiceImpl implements FileService
                 {
                     Files.delete(Path.of(userRecycleSpace.toString(), recycleInfo.getRecycleRelativePath()));
                     // 删除成功没有抛异常，就把数据库记录删除掉
-                    recycleInfoMapper.delByUUID(recycleInfo.getUuid());
+//                    recycleInfoMapper.delByUUID(recycleInfo.getUuid());
+                    delData.add(recycleInfo.getUuid());
                 }
                 catch (IOException e)
                 {
                     delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "删除失败"));
                 }
             }
+            recycleInfoMapper.delByUUIDs(delData);
             // 清空空目录
             try
             {
-                cleanEmptyDirs(delFailList, userRecycleSpace.toString(), groupUUID);
+                FileUtils.cleanEmptyDirs(delFailList, userRecycleSpace.toString(), groupUUID);
             } catch (IOException e)
             {
                 log.error("在清空空目录的时候失败, group_uuid={}, 具体异常信息: ", groupUUID, e);
@@ -626,74 +405,6 @@ public class FileServiceImpl implements FileService
         }
         return delFailList;
     }
-
-//    public List<DelFailFile> permanentDels(Set<String> _UUIDs)
-//    {
-//        List<DelFailFile> delFailList = new ArrayList<>();
-//        Long userId = ShiroUtils.getUserId();
-//        for (String uuid : _UUIDs)
-//        {
-//            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
-//            if (null == recycleInfo)
-//            {
-//                // 记录失败的uuid
-//                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
-//                delFailList.add(delFailFile);
-//                continue;
-//            }
-//            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
-//                throw new ServiceExcept("你无权删除其他人的文件");
-//            AtomicBoolean success = new AtomicBoolean(true);
-//            try
-//            {
-//                Path userRecycleSpacePath = Path.of(recycleFolderRootPath, String.valueOf(userId));
-//                Path recycleFileFullPath = Path.of(userRecycleSpacePath.toString(), uuid);
-//                // 递归删除目录及所有内容
-//                try (Stream<Path> stream = Files.walk(recycleFileFullPath))
-//                {
-//                    stream.sorted(Comparator.reverseOrder()).forEach(path ->
-//                    {
-//                        try
-//                        {
-//                            Files.delete(path);
-//                        } catch (IOException e)
-//                        {
-//                            success.set(false);
-//                            log.error("uuid={}, 路径={} 删除失败, 失败原因: ", uuid, path, e);
-//                            DelFailFile delFailFile = new DelFailFile(uuid, path + "删除失败, 失败原因: " + e.getMessage());
-//                            delFailList.add(delFailFile);
-//                        }
-//                    });
-//                }
-//            }
-//            catch (NoSuchFileException e)
-//            {
-//                log.error("{} 删除失败, 失败原因: {}", uuid, "没有找到该uuid对应的路径", e);
-//                DelFailFile delFailFile = new DelFailFile(uuid, "没有找到该文件, 该文件不在回收站或者路径错误");
-//                delFailList.add(delFailFile);
-//                continue;
-//            }
-//            catch (Exception e)
-//            {
-//                log.error("{} 删除失败, 失败原因: ", uuid, e);
-//                DelFailFile delFailFile = new DelFailFile(uuid, e.getMessage());
-//                delFailList.add(delFailFile);
-//                continue;
-//            }
-//            if (success.get())
-//            {
-//                try
-//                {
-//                    recycleInfoMapper.delByUUID(uuid);
-//                } catch (Exception e)
-//                {
-//                    log.error("{} 数据库记录删除失败, 失败原因: ", uuid, e);
-//                    delFailList.add(new DelFailFile(uuid, "数据库记录删除失败: " + e.getMessage()));
-//                }
-//            }
-//        }
-//        return delFailList;
-//    }
 
     /**
      * 还原
@@ -729,7 +440,7 @@ public class FileServiceImpl implements FileService
             try
             {
                 Path recycleFileRootPath = Path.of(userRecycleSpace.toString(), recycleInfo.getUuid());
-                collectLeafPaths(recycleRelativePathStrs, recycleFileRootPath, recycleInfo.getOriginalRelativePath());
+                FileUtils.collectLeafPaths(recycleRelativePathStrs, recycleFileRootPath, recycleInfo.getOriginalRelativePath());
             }
             catch (NoSuchFileException e)
             {

@@ -9,8 +9,16 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.core.domain.DelFailFile;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -286,6 +294,113 @@ public class FileUtils
         }
         String baseName = FilenameUtils.getBaseName(fileName);
         return baseName;
+    }
+
+    /**
+     * 递归清理 rootDir 及其所有子目录下的空目录。
+     * 如遇有文件，记录日志并跳过。
+     * 最后也会把自身删除, 比如清理/a, 那么/a下面所有空目录都会删除, 最后再把自身删除
+     * 该函数遇到目录下有文件不会删除, 会跳过并写入错误原因到_DelFailList
+     * @param rootDir 待清理的目录
+     * @return 返回未能删除的目录（目录下有文件）
+     */
+    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, Path rootDir) throws IOException {
+        List<Path> undeletedDirs = new ArrayList<>();
+        cleanEmptyDirsInternal(_DelFailList, rootDir, undeletedDirs);
+        return undeletedDirs;
+    }
+
+    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, String _Root, String relative) throws IOException {
+        Path fullPath = Path.of(_Root, relative);
+        List<Path> undeletedDirs = new ArrayList<>();
+        cleanEmptyDirsInternal(_DelFailList, fullPath, undeletedDirs);
+        return undeletedDirs;
+    }
+
+    // 内部递归函数
+    public static boolean cleanEmptyDirsInternal(List<DelFailFile> _DelFailList, Path dir, List<Path> undeletedDirs) throws IOException
+    {
+        if (!Files.isDirectory(dir))
+            return false;
+        boolean canDelete = true;
+
+        // 检查子目录和文件
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path child : stream) {
+                if (Files.isDirectory(child)) {
+                    boolean subDirCanDelete = cleanEmptyDirsInternal(_DelFailList, child, undeletedDirs);
+                    if (!subDirCanDelete) canDelete = false;
+                } else {
+                    // 有文件就不能删
+                    canDelete = false;
+                }
+            }
+        }
+
+        if (canDelete) {
+            try {
+                Files.delete(dir);
+                // System.out.println("删除空目录：" + dir);
+            } catch (IOException e) {
+                undeletedDirs.add(dir);
+                // System.err.println("无法删除空目录 " + dir + "，异常：" + e.getMessage());
+                return false;
+            }
+            return true;
+        } else {
+            undeletedDirs.add(dir); // 目录下还有文件
+            // System.err.println("目录下还有文件，不能删除: " + dir);
+            _DelFailList.add(new DelFailFile(dir.toString(), "还有文件，可能之前移动失败，因此该路径无法删除"));
+            return false;
+        }
+    }
+
+    /**
+     * 递归收集 root/relative 下所有叶子路径（相对root的路径）。
+     * 所有相对路径保证无开头"/"或"\"，且分隔符全部为"/"。
+     * @param resultList 输出结果（相对路径字符串，分隔符全为/）
+     * @param root       根目录
+     * @param relative   当前递归相对路径，可传"c/d"、"/c/d"、"\c\d"等任意风格
+     */
+    public static void collectLeafPaths(List<String> resultList, Path root, String relative) throws IOException
+    {
+        // 1. 规范化传入的相对路径
+        String relNorm = relative.replaceAll("^[\\\\/]+", "")   // 去掉所有开头的斜杠
+                .replace("\\", "/");           // 统一分隔符
+        Path relPath = relNorm.isEmpty() ? Paths.get("") : Paths.get(relNorm);
+        Path absPath = root.resolve(relPath);
+
+        // 2. 判断叶子并收集
+        if (Files.isRegularFile(absPath) || isEmptyDir(absPath)) {
+            // 规范化list里所有路径
+            String addPath = relPath.toString().replace("\\", "/");
+            resultList.add(addPath);
+            return;
+        }
+
+        // 3. 递归目录
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(absPath)) {
+            for (Path child : stream) {
+                // 递归时拼接新相对路径，并传递字符串格式
+                String childRel = relNorm.isEmpty()
+                        ? child.getFileName().toString()
+                        : relNorm + "/" + child.getFileName().toString();
+                collectLeafPaths(resultList, root, childRel);
+            }
+        }
+    }
+
+    public static void collectLeafPaths(List<String> _ResultList, String _Root, String _Relative) throws IOException {
+        Path root = Path.of(_Root);
+        collectLeafPaths(_ResultList, root, _Relative);
+    }
+
+    // 判断是不是空目录
+    private static boolean isEmptyDir(Path dir) throws IOException {
+        if (!Files.isDirectory(dir)) return false;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            return !stream.iterator().hasNext();
+        }
     }
 }
 
