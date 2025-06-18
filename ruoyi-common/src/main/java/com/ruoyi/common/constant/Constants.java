@@ -131,4 +131,6 @@ public class Constants
 
     public static final Long ADMIN_USER_ID = 1L;
 
+    public static final String REVERT_FOLDER_NAME = "回收站恢复的文件";
+
 }

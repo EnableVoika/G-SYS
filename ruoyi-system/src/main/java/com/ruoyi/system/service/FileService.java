@@ -23,9 +23,11 @@ public interface FileService
 
     void mkdirs(String _RootPath, String relativePath);
 
-    List<DelFailFile> recycle(long _UserId, List<String> _Paths) throws IOException;
+    List<DelFailFile> recycle(long _UserId, List<String> _OriginalRelativePaths) throws IOException;
 
     List<RecycleVO> recycleList(RecycleListDTO _Dto);
 
     List<DelFailFile> permanentDels(Set<String> _UUIDs);
+
+    List<DelFailFile> reverts(Set<String> _UUIDs);
 }

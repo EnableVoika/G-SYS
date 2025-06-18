@@ -8,6 +8,10 @@ public class FileDTO
 
     private List<String> uuids;
 
+    private String groupUuid;
+
+    private List<String> groupUuids;
+
     private String path;
 
     private List<String> paths;
@@ -26,6 +30,22 @@ public class FileDTO
 
     public void setUuids(List<String> uuids) {
         this.uuids = uuids;
+    }
+
+    public String getGroupUuid() {
+        return groupUuid;
+    }
+
+    public void setGroupUuid(String groupUuid) {
+        this.groupUuid = groupUuid;
+    }
+
+    public List<String> getGroupUuids() {
+        return groupUuids;
+    }
+
+    public void setGroupUuids(List<String> groupUuids) {
+        this.groupUuids = groupUuids;
     }
 
     public String getPath()

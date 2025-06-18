@@ -5,7 +5,12 @@
 <mapper namespace="com.ruoyi.system.mapper.RecycleInfoMapper">
 
     <resultMap type="com.ruoyi.system.domain.RecycleInfo" id="RecycleInfoResult">
-        <id     property="uuid"      column="uuid"      />
+        <id property="uuid"      column="uuid"      />
+        <result property="groupUuid" column="group_uuid"/>
+        <result property="groupName"      column="group_name"      />
+        <result property="groupRelativePath"      column="group_relative_path"      />
+        <result property="relativeTopType"      column="relative_top_type"      />
+        <result property="relativeTopTypeLabel"      column="relative_top_type_label"      />
         <result property="userId"      column="user_id"      />
         <result property="fileType"      column="file_type"      />
         <result property="typeLabel"      column="type_label"      />
@@ -16,7 +21,7 @@
     </resultMap>
 
     <sql id="selectRecycleInfo">
-        select uuid, user_id, file_type, type_label, original_file_name, original_relative_path, recycle_relative_path,deleted_at
+        select uuid, group_uuid, group_name, group_relative_path, relative_top_type, relative_top_type_label, user_id, file_type, type_label, original_file_name, original_relative_path, recycle_relative_path,deleted_at
         from recycle_info
     </sql>
 
@@ -26,6 +31,12 @@
             1=1
             <if test="null != uuid and '' != uuid">
                 and uuid = #{uuid}
+            </if>
+            <if test="null != groupUuid and '' != groupUuid">
+                and group_uuid = #{groupUuid}
+            </if>
+            <if test="null != groupName and '' != groupName">
+                and group_name = #{groupName}
             </if>
             <if test="null != userId">
                 and user_id = #{userId}
@@ -65,6 +76,11 @@
     <insert id="insert_batch" parameterType="java.util.List">
         INSERT INTO recycle_info (
         uuid,
+        group_uuid,
+        group_name,
+        group_relative_path,
+        relative_top_type,
+        relative_top_type_label,
         user_id,
         file_type,
         type_label,
@@ -77,6 +93,11 @@
         <foreach collection="list" item="item" separator=",">
             (
             #{item.uuid},
+            #{item.groupUuid},
+            #{item.groupName},
+            #{item.groupRelativePath},
+            #{item.relativeTopType},
+            #{item.relativeTopTypeLabel},
             #{item.userId},
             <choose>
                 <when test="item.fileType != null">
@@ -112,6 +133,11 @@
     <insert id="insert" parameterType="com.ruoyi.system.domain.RecycleInfo">
         INSERT INTO recycle_info (
         uuid,
+        group_uuid,
+        group_name,
+        group_relative_path,
+        relative_top_type,
+        relative_top_type_label,
         user_id,
         file_type,
         type_label,
@@ -122,6 +148,11 @@
         )
         VALUES (
         #{uuid},
+        #{groupUuid},
+        #{groupName},
+        #{groupRelativePath},
+        #{relativeTopType},
+        #{relativeTopTypeLabel},
         #{userId},
         <choose>
             <when test="fileType != null">

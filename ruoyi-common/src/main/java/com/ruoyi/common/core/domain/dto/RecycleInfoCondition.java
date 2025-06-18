@@ -8,6 +8,10 @@ public class RecycleInfoCondition implements Serializable
 
     private String uuid;
 
+    private String groupUuid;
+
+    private String groupName;
+
     private Long userId;
 
     private Integer fileType;
@@ -30,6 +34,22 @@ public class RecycleInfoCondition implements Serializable
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getGroupUuid() {
+        return groupUuid;
+    }
+
+    public void setGroupUuid(String groupUuid) {
+        this.groupUuid = groupUuid;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public Long getUserId() {

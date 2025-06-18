@@ -8,6 +8,16 @@ public class RecycleInfo implements Serializable
 
     private String uuid;
 
+    private String groupUuid;
+
+    private String groupName;
+
+    private String groupRelativePath;
+
+    private Integer relativeTopType;
+
+    private String relativeTopTypeLabel;
+
     private Long userId;
 
     private Integer fileType;
@@ -28,6 +38,46 @@ public class RecycleInfo implements Serializable
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getGroupUuid() {
+        return groupUuid;
+    }
+
+    public void setGroupUuid(String groupUuid) {
+        this.groupUuid = groupUuid;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getGroupRelativePath() {
+        return groupRelativePath;
+    }
+
+    public void setGroupRelativePath(String groupRelativePath) {
+        this.groupRelativePath = groupRelativePath;
+    }
+
+    public Integer getRelativeTopType() {
+        return relativeTopType;
+    }
+
+    public void setRelativeTopType(Integer relativeTopType) {
+        this.relativeTopType = relativeTopType;
+    }
+
+    public String getRelativeTopTypeLabel() {
+        return relativeTopTypeLabel;
+    }
+
+    public void setRelativeTopTypeLabel(String relativeTopTypeLabel) {
+        this.relativeTopTypeLabel = relativeTopTypeLabel;
     }
 
     public Long getUserId() {

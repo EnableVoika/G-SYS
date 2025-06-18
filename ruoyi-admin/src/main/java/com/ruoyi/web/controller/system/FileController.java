@@ -265,4 +265,35 @@ public class FileController extends BaseController
         return AjaxResult.ok("文件删除成功");
     }
 
+    /**
+     * 回收站还原
+     * @return
+     */
+    @RequiresPermissions("system:file:revert")
+    @PostMapping("/revert")
+    @ResponseBody
+    public AjaxResult revert(@RequestBody FileDTO _Dto)
+    {
+        Set<String> uuids = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(_Dto.getUuids()))
+        {
+            for (String uuid : _Dto.getUuids())
+            {
+                uuids.add(uuid);
+            }
+        }
+        if (StringUtils.isNotEmpty(_Dto.getUuid()))
+            uuids.add(_Dto.getUuid());
+        if (CollectionUtils.isEmpty(uuids))
+            throw new ServiceExcept("文件路径id不能为空");
+        List<DelFailFile> delFailFiles = fileService.reverts(uuids);
+        if (CollectionUtils.isNotEmpty(delFailFiles))
+        {
+            if (delFailFiles.size() == uuids.size())
+                return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "文件还原失败", delFailFiles);
+            return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件还原失败", delFailFiles);
+        }
+        return AjaxResult.ok("还原成功");
+    }
+
 }

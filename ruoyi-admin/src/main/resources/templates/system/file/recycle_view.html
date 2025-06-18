@@ -377,7 +377,7 @@
                 checkbox: true
             },
             {
-                field: 'originalFileName',
+                field: 'groupName',
                 title: '名称',
                 formatter: function(value, row, index)
                 {
@@ -397,7 +397,7 @@
                 }
             },
             {
-                field : 'originalRelativePath',
+                field : 'groupRelativePath',
                 title : '原始位置'
             },
             {
@@ -413,7 +413,7 @@
                 }
             },
             {
-                field : 'typeLabel',
+                field : 'topTypeLabel',
                 title : '项目类型'
             },
             {
@@ -421,6 +421,7 @@
                 align: 'center',
                 formatter: function(value, row, index) {
                     var actions = [];
+                    actions.push('<a class="btn btn-success btn-xs" href="javascript:;" onclick="revert(\'' + encodeURIComponent(row.uuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-edit"></i>还原</a> ');
                     actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="permanentSingle(\'' + encodeURIComponent(row.uuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-remove"></i>删除</a>');
                     return actions.join('');
                 }
@@ -504,6 +505,62 @@
                 $.modal.alertError("网络异常");
             }
         });
+    }
+
+    function revertRequest(uuids)
+    {
+        $.ajax({
+            url: prefix + "/revert",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ uuids: uuids }), // 假设后端按 JSON 结构接收
+            success: function (res)
+            {
+                // console.log(res)
+                if (res.code === 0)
+                {
+                    $.modal.alertSuccess_callback(res.msg, function ()
+                    {
+                        get_list('');
+                    },
+                    function ()
+                    {
+                        get_list('');
+                    });
+                }
+                else if(res.code === 513)
+                {
+                    console.log(res)
+                    $.modal.alertWarning_callback(res.msg, function ()
+                    {
+                        get_list('');
+                    },
+                    function ()
+                    {
+                        get_list('');
+                    });
+                }
+                else
+                {
+                    $.modal.alertError(res.msg || "删除失败");
+                }
+
+            },
+            error: function () {
+                $.modal.alertError("网络异常");
+            }
+        });
+    }
+
+    function revert(uuid, originalFileName)
+    {
+        if (null === uuid || uuid === '') return;
+        uuid = decodeURIComponent(uuid);
+        originalFileName = decodeURIComponent(originalFileName);
+        $.modal.alertWarning_callback(`确认恢复 ${originalFileName} 吗？`, function ()
+        {
+            revertRequest([uuid]);
+        }, null);
     }
 
     function permanentSelectedFiles()
