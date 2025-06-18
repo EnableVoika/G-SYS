@@ -421,8 +421,8 @@
                 align: 'center',
                 formatter: function(value, row, index) {
                     var actions = [];
-                    actions.push('<a class="btn btn-success btn-xs" href="javascript:;" onclick="revert(\'' + encodeURIComponent(row.uuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-edit"></i>还原</a> ');
-                    actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="permanentSingle(\'' + encodeURIComponent(row.uuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-remove"></i>删除</a>');
+                    actions.push('<a class="btn btn-success btn-xs" href="javascript:;" onclick="revert(\'' + encodeURIComponent(row.groupUuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-edit"></i>还原</a> ');
+                    actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="permanentSingle(\'' + encodeURIComponent(row.groupUuid) + '\', \'' + encodeURIComponent(row.originalFileName) + '\')"><i class="fa fa-remove"></i>删除</a>');
                     return actions.join('');
                 }
             }]
@@ -435,7 +435,9 @@
         $.post({
             url: prefix + "/recycle_list",
             data: { originalFileName: originalFileName },
-            success: function(res) {
+            success: function(res)
+            {
+                // console.log(res);
                 if(res.code === 0)
                 {
                     $('#bootstrap-table').bootstrapTable('load', res); // 替换当前数据
@@ -444,7 +446,6 @@
                 {
                     $.modal.alertError(res.msg);
                 }
-                // console.log(res);
             },
             error: function(err) {
                 console.error("请求失败：", err);
@@ -462,13 +463,13 @@
         }
     }
 
-    function permanentRequest(uuids)
+    function permanentRequest(groupUuids)
     {
         $.ajax({
             url: prefix + "/permanent",
             type: "DELETE",
             contentType: "application/json",
-            data: JSON.stringify({ uuids: uuids }), // 假设后端按 JSON 结构接收
+            data: JSON.stringify({ groupUuids: groupUuids }), // 假设后端按 JSON 结构接收
             success: function (res)
             {
                 // console.log(res)
@@ -507,13 +508,13 @@
         });
     }
 
-    function revertRequest(uuids)
+    function revertRequest(groupUuids)
     {
         $.ajax({
             url: prefix + "/revert",
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ uuids: uuids }), // 假设后端按 JSON 结构接收
+            data: JSON.stringify({ groupUuids: groupUuids }), // 假设后端按 JSON 结构接收
             success: function (res)
             {
                 // console.log(res)
@@ -552,14 +553,14 @@
         });
     }
 
-    function revert(uuid, originalFileName)
+    function revert(groupUuid, originalFileName)
     {
-        if (null === uuid || uuid === '') return;
-        uuid = decodeURIComponent(uuid);
+        if (null === groupUuid || groupUuid === '') return;
+        groupUuid = decodeURIComponent(groupUuid);
         originalFileName = decodeURIComponent(originalFileName);
         $.modal.alertWarning_callback(`确认恢复 ${originalFileName} 吗？`, function ()
         {
-            revertRequest([uuid]);
+            revertRequest([groupUuid]);
         }, null);
     }
 
@@ -569,19 +570,19 @@
         if (selections.length === 0) return;
         $.modal.alertWarning_callback(`确认删除这 ${selections.length} 项吗？这将永久删除，无法恢复！`, function ()
         {
-            const uuids = selections.map(row => row.uuid);
-            permanentRequest(uuids);
+            const groupUuids = selections.map(row => row.groupUuid);
+            permanentRequest(groupUuids);
         }, null);
     }
 
-    function permanentSingle(uuid, originalFileName)
+    function permanentSingle(groupUuid, originalFileName)
     {
-        if (null === uuid || uuid === '') return;
-        uuid = decodeURIComponent(uuid);
+        if (null === groupUuid || groupUuid === '') return;
+        groupUuid = decodeURIComponent(groupUuid);
         originalFileName = decodeURIComponent(originalFileName);
         $.modal.alertWarning_callback(`确认删除 ${originalFileName} 吗？这将永久删除，无法恢复！`, function ()
         {
-            permanentRequest([uuid]);
+            permanentRequest([groupUuid]);
         }, null);
     }
 
