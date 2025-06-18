@@ -1,12 +1,17 @@
 package com.ruoyi.common.utils.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import com.ruoyi.common.config.RuoYiConfig;
+import com.ruoyi.common.core.domain.DelFailFile;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.uuid.IdUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -15,17 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.ruoyi.common.core.domain.DelFailFile;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import com.ruoyi.common.config.RuoYiConfig;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.common.utils.uuid.IdUtils;
 
 /**
  * 文件处理工具类
@@ -395,10 +389,16 @@ public class FileUtils
         collectLeafPaths(_ResultList, root, _Relative);
     }
 
-    // 判断是不是空目录
-    private static boolean isEmptyDir(Path dir) throws IOException {
+    /**
+     * 判断是不是空目录
+     * @param dir
+     * @return
+     * @throws IOException
+     */
+    public static boolean isEmptyDir(Path dir) throws IOException {
         if (!Files.isDirectory(dir)) return false;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir))
+        {
             return !stream.iterator().hasNext();
         }
     }

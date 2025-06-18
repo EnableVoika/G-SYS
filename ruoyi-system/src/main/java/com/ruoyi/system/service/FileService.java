@@ -27,5 +27,5 @@ public interface FileService
 
     List<DelFailFile> permanentDels(long _UserId, Set<String> _GroupUUIDs);
 
-    List<DelFailFile> reverts(Set<String> _UUIDs);
+    List<DelFailFile> reverts(long _UserId, Set<String> _UUIDs);
 }

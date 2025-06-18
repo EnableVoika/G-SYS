@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -187,5 +188,19 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         LocalDateTime localDateTime = LocalDateTime.of(temporalAccessor, LocalTime.of(0, 0, 0));
         ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
         return Date.from(zdt.toInstant());
+    }
+
+    /**
+     * 日期推移指定描述
+     * @param dateTimeStr
+     * @param seconds
+     * @return
+     */
+    public static String offsetSeconds(String dateTimeStr, int seconds, String inputPattern, String outputPattern) {
+        DateTimeFormatter inputFmt = DateTimeFormatter.ofPattern(inputPattern);
+        DateTimeFormatter outputFmt = DateTimeFormatter.ofPattern(outputPattern);
+        LocalDateTime dt = LocalDateTime.parse(dateTimeStr, inputFmt);
+        LocalDateTime result = dt.plusSeconds(seconds);
+        return result.format(outputFmt);
     }
 }

@@ -29,11 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService
@@ -412,132 +416,256 @@ public class FileServiceImpl implements FileService
      * 如果是本地系统占用、删除等一系列绕开G-SYS监控行为的，视为不可控因素
      * 否则默认情况文件能进入回收站，就说明文件已经在删除之前就解除了所有可以被使用的可能
      * 再加上回收站内不可操作文件，所以不可能出现 *部分还原失败* 情况
-     * @param _UUIDs
+     * @param _UserId
+     * @param _GroupUUIDs
      * @return
      */
-    public List<DelFailFile> reverts(Set<String> _UUIDs)
+    public List<DelFailFile> reverts(long _UserId, Set<String> _GroupUUIDs)
     {
         List<DelFailFile> delFailList = new ArrayList<>();
-        Long userId = ShiroUtils.getUserId();
-        String datatimeStr = DateUtils.dateTimeNow();
+        Path userSpacePath = Path.of(getUserHome(_UserId));
+        Path userRecycleSpacePath = getUserRecycleSpace(_UserId);
+        List<String> delUuidData = new ArrayList<>();
         int count = 0;
-        for (String uuid : _UUIDs)
+        RecycleInfoCondition condition = new RecycleInfoCondition();
+        condition.setUserId(_UserId);
+        String datatimeStr = DateUtils.dateTimeNow();
+        for (String groupUUID : _GroupUUIDs)
         {
-            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
-            if (null == recycleInfo)
+            condition.setGroupUuid(groupUUID);
+            List<RecycleInfo> searchResult = recycleInfoMapper.search(condition);
+            if (CollectionUtils.isEmpty(searchResult))
             {
-                // 记录失败的uuid
-                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
-                delFailList.add(delFailFile);
                 continue;
             }
-            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
-                throw new ServiceExcept("你无权操作其他人的文件");
-            Path userRecycleSpace = Path.of(recycleFolderRootPath, String.valueOf(userId));
-            String userHome = getUserHome(userId);
-            Path originalFileFullPath = Path.of(userHome, recycleInfo.getOriginalRelativePath());
-            List<String> recycleRelativePathStrs = new ArrayList<>();
+            datatimeStr = DateUtils.offsetSeconds(datatimeStr, count++, DateUtils.YYYYMMDDHHMMSS, DateUtils.YYYYMMDDHHMMSS);
+            for (RecycleInfo recycleInfo : searchResult)
+            {
+                if (_UserId != Constants.ADMIN_USER_ID && !recycleInfo.getUserId().equals(_UserId))
+                    throw new ServiceExcept("你无权操作其他人的文件");
+                Path originalAbsolutPath = Path.of(userSpacePath.toString(), recycleInfo.getOriginalRelativePath());
+                Path recycleAbsolutPath = Path.of(userRecycleSpacePath.toString(), recycleInfo.getRecycleRelativePath());
+                // 如果用户空间没有这个文件，那就直接写入到原始位置
+                if (!Files.exists(originalAbsolutPath))
+                {
+                    try
+                    {
+                        // 先创建父目录
+                        Files.createDirectories(originalAbsolutPath.getParent());
+                        Files.move(recycleAbsolutPath, originalAbsolutPath);
+                        // 把移动成功的记录塞进list, 用于后面批量删除用
+                        delUuidData.add(recycleInfo.getUuid());
+                    }
+                    catch (IOException e)
+                    {
+                        log.error("{} 还原失败, 异常详情: ", recycleInfo.getOriginalRelativePath(), e);
+                        delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "还原失败, uuid=" + recycleInfo.getUuid()));
+                    }
+
+                }
+                // 如果文件已经存在,判断当前目录是否是空目录，是的话，也写入原位置，否则就在用户空间新建一个目录，把文件还原到那里存放着
+                else
+                {
+                    // 先判断原始路径是否是目录
+                    if (Files.isDirectory(originalAbsolutPath))
+                    {
+                        // 判断是否是空目录
+                        try
+                        {
+                            // 如果是空目录, 就直接跳过
+                            if (FileUtils.isEmptyDir(originalAbsolutPath))
+                            {
+                                delUuidData.add(recycleInfo.getUuid());
+                            }
+                        }
+                        catch (IOException e)
+                        {
+                            log.error("原始路径是一个空目录, 但 {} 依然还原失败, 异常详情: ", recycleInfo.getOriginalRelativePath(), e);
+                            delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "原始路径是一个空目录, 但" + recycleInfo.getOriginalRelativePath() + "依然还原失败"));
+                        }
+                    }
+                    // 如果不是目录, 而且还已经存在了, 就在用户空间根目录新建一个文件夹存放恢复的文件, 格式 恢复路径/日期/原始地址
+                    else
+                    {
+                        // 设置恢复文件夹路径
+                        Path revertAbsolutRootPath = Path.of(userSpacePath.toString(), Constants.REVERT_FOLDER_NAME);
+                        // 设置原文件恢复到恢复文件夹的绝对地址
+                        Path toRevertPath = Path.of(revertAbsolutRootPath.toString(), datatimeStr, recycleInfo.getOriginalRelativePath());
+                        try
+                        {
+                            // 把父目录创建好
+                            Files.createDirectories(toRevertPath.getParent());
+                            // 开始移动文件
+                            Files.move(recycleAbsolutPath, toRevertPath);
+                            delUuidData.add(recycleInfo.getUuid());
+                        }
+                        catch (IOException e)
+                        {
+                            log.error("创建恢复文件夹失败, {} 无法恢复, 异常详情: ", recycleInfo.getOriginalRelativePath(), e);
+                            delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "创建恢复文件夹失败, " + recycleInfo.getOriginalRelativePath() + "无法恢复"));
+                        }
+                    }
+                }
+            }
+            // 清空回收站空目录
             try
             {
-                Path recycleFileRootPath = Path.of(userRecycleSpace.toString(), recycleInfo.getUuid());
-                FileUtils.collectLeafPaths(recycleRelativePathStrs, recycleFileRootPath, recycleInfo.getOriginalRelativePath());
+                FileUtils.cleanEmptyDirs(delFailList, userRecycleSpacePath.toString(), groupUUID);
             }
-            catch (NoSuchFileException e)
+            catch (IOException e)
             {
-//                Path recycleFileFullPath = Path.of(userRecycleSpace.toString(), recycleInfo.getRecycleRelativePath());
-                log.error("获取叶子路径出现异常, 路径{} 不存在, 异常信息: ", e.getMessage(), e);
-                throw new ServiceExcept("还原失败");
+                log.error("group_uuid={} 已经还原完成, 但是回收站里的残留空目录清理失败, 异常详情: ", groupUUID, e);
+                delFailList.add(new DelFailFile(groupUUID, "group_uuid=" + groupUUID + "已经还原完成, 但是回收站里的残留空目录清理失败"));
             }
-            catch (IOException e) {
-                log.error("获取叶子路径出现异常, 异常信息: ", e);
-                throw new ServiceExcept("还原失败");
-            }
-
-            for (String recycleRelativePathStr : recycleRelativePathStrs)
-            {
-                // 获取每一个叶子路径
-                Path recycleFullPath = Path.of(userRecycleSpace.toString(), recycleRelativePathStr);
-                // 现根据当前叶子路径，判断还原目标路径是否已经存在同名文件或文件夹
-                // 如果同名文件已经存在
-                if (Files.exists(originalFileFullPath))
-                {
-
-                }
-            }
-
-
-
-            // 如果文件已经存在，则创建一个“回收站恢复的文件”文件夹，里面用一个日期作为文件夹名、数字递增的文件夹储存恢复文件
-            if (Files.exists(originalFileFullPath))
-            {
-                Path moveTo = Path.of(userHome, Constants.REVERT_FOLDER_NAME, datatimeStr, String.valueOf(count++), recycleInfo.getOriginalRelativePath());
-                try
-                {
-                    Files.createDirectories(moveTo.getParent());
-                }
-                catch (SecurityException e)
-                {
-                    log.error("没有权限访问源文件目录, 异常信息: ", e);
-                    delFailList.add(new DelFailFile(uuid, "没有权限访问源文件目录"));
-                    continue;
-                }
-                catch (IOException e)
-                {
-                    log.error("创建存放恢复文件的文件夹失败, 失败原因: ", e);
-                    delFailList.add(new DelFailFile(uuid, "没有可用的位置存放恢复文件"));
-                    continue;
-                }
-                catch (RuntimeException e)
-                {
-                    log.error("恢复uuid={} 的文件失败, 失败原因: ", uuid, e);
-                    delFailList.add(new DelFailFile(uuid, "无法创建可用的位置存放恢复文件"));
-                    continue;
-                }
-                try
-                {
-//                    Files.move(recycleFileFullPath, moveTo);
-                } catch (RuntimeException e)
-                {
-                    log.error("移动文件或文件夹失败, 失败原因: ", e);
-                    delFailList.add(new DelFailFile(uuid, "还原失败"));
-                    continue;
-                }
-                // delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "部分文件还原到了原位置，另一部分因为原位置存在重名文件，因此恢复到了“" + Constants.REVERT_FOLDER_NAME + "”当中"));
-            }
-            // 如果源地址没有重名路径，直接原样恢复，不创建恢复文件夹
-            else
-            {
-                try
-                {
-                    // 先创建父目录
-                    Files.createDirectories(originalFileFullPath.getParent());
-                }
-                catch (SecurityException e)
-                {
-                    log.error("没有权限访问源文件目录, 异常信息: ", e);
-                    delFailList.add(new DelFailFile(uuid, "没有权限访问源文件目录"));
-                    continue;
-                }
-                catch (IOException | RuntimeException e)
-                {
-                    log.error("移动文件或文件夹到源目录位置时失败, 失败原因: ", e);
-                    delFailList.add(new DelFailFile(uuid, "还原失败"));
-                    continue;
-                }
-                // 开始移动文件
-                try
-                {
-//                    Files.move(recycleFileFullPath, originalFileFullPath);
-                } catch (RuntimeException e)
-                {
-                    log.error("移动文件或文件夹失败, 失败原因: ", e);
-                    delFailList.add(new DelFailFile(uuid, "还原失败"));
-                    continue;
-                }
-            }
-            // 全部成功移动，删除记录
-            recycleInfoMapper.delByUUID(uuid);
         }
+        recycleInfoMapper.delByUUIDs(delUuidData);
         return delFailList;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    public List<DelFailFile> reverts(Set<String> _UUIDs)
+//    {
+//        List<DelFailFile> delFailList = new ArrayList<>();
+//        Long userId = ShiroUtils.getUserId();
+//        String datatimeStr = DateUtils.dateTimeNow();
+//        int count = 0;
+//        for (String uuid : _UUIDs)
+//        {
+//            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
+//            if (null == recycleInfo)
+//            {
+//                // 记录失败的uuid
+//                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
+//                delFailList.add(delFailFile);
+//                continue;
+//            }
+//            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
+//                throw new ServiceExcept("你无权操作其他人的文件");
+//            Path userRecycleSpace = Path.of(recycleFolderRootPath, String.valueOf(userId));
+//            String userHome = getUserHome(userId);
+//            Path originalFileFullPath = Path.of(userHome, recycleInfo.getOriginalRelativePath());
+//            List<String> recycleRelativePathStrs = new ArrayList<>();
+//            try
+//            {
+//                Path recycleFileRootPath = Path.of(userRecycleSpace.toString(), recycleInfo.getUuid());
+//                FileUtils.collectLeafPaths(recycleRelativePathStrs, recycleFileRootPath, recycleInfo.getOriginalRelativePath());
+//            }
+//            catch (NoSuchFileException e)
+//            {
+////                Path recycleFileFullPath = Path.of(userRecycleSpace.toString(), recycleInfo.getRecycleRelativePath());
+//                log.error("获取叶子路径出现异常, 路径{} 不存在, 异常信息: ", e.getMessage(), e);
+//                throw new ServiceExcept("还原失败");
+//            }
+//            catch (IOException e) {
+//                log.error("获取叶子路径出现异常, 异常信息: ", e);
+//                throw new ServiceExcept("还原失败");
+//            }
+//
+//            for (String recycleRelativePathStr : recycleRelativePathStrs)
+//            {
+//                // 获取每一个叶子路径
+//                Path recycleFullPath = Path.of(userRecycleSpace.toString(), recycleRelativePathStr);
+//                // 现根据当前叶子路径，判断还原目标路径是否已经存在同名文件或文件夹
+//                // 如果同名文件已经存在
+//                if (Files.exists(originalFileFullPath))
+//                {
+//
+//                }
+//            }
+//
+//
+//
+//            // 如果文件已经存在，则创建一个“回收站恢复的文件”文件夹，里面用一个日期作为文件夹名、数字递增的文件夹储存恢复文件
+//            if (Files.exists(originalFileFullPath))
+//            {
+//                Path moveTo = Path.of(userHome, Constants.REVERT_FOLDER_NAME, datatimeStr, String.valueOf(count++), recycleInfo.getOriginalRelativePath());
+//                try
+//                {
+//                    Files.createDirectories(moveTo.getParent());
+//                }
+//                catch (SecurityException e)
+//                {
+//                    log.error("没有权限访问源文件目录, 异常信息: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "没有权限访问源文件目录"));
+//                    continue;
+//                }
+//                catch (IOException e)
+//                {
+//                    log.error("创建存放恢复文件的文件夹失败, 失败原因: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "没有可用的位置存放恢复文件"));
+//                    continue;
+//                }
+//                catch (RuntimeException e)
+//                {
+//                    log.error("恢复uuid={} 的文件失败, 失败原因: ", uuid, e);
+//                    delFailList.add(new DelFailFile(uuid, "无法创建可用的位置存放恢复文件"));
+//                    continue;
+//                }
+//                try
+//                {
+////                    Files.move(recycleFileFullPath, moveTo);
+//                } catch (RuntimeException e)
+//                {
+//                    log.error("移动文件或文件夹失败, 失败原因: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "还原失败"));
+//                    continue;
+//                }
+//                // delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "部分文件还原到了原位置，另一部分因为原位置存在重名文件，因此恢复到了“" + Constants.REVERT_FOLDER_NAME + "”当中"));
+//            }
+//            // 如果源地址没有重名路径，直接原样恢复，不创建恢复文件夹
+//            else
+//            {
+//                try
+//                {
+//                    // 先创建父目录
+//                    Files.createDirectories(originalFileFullPath.getParent());
+//                }
+//                catch (SecurityException e)
+//                {
+//                    log.error("没有权限访问源文件目录, 异常信息: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "没有权限访问源文件目录"));
+//                    continue;
+//                }
+//                catch (IOException | RuntimeException e)
+//                {
+//                    log.error("移动文件或文件夹到源目录位置时失败, 失败原因: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "还原失败"));
+//                    continue;
+//                }
+//                // 开始移动文件
+//                try
+//                {
+////                    Files.move(recycleFileFullPath, originalFileFullPath);
+//                } catch (RuntimeException e)
+//                {
+//                    log.error("移动文件或文件夹失败, 失败原因: ", e);
+//                    delFailList.add(new DelFailFile(uuid, "还原失败"));
+//                    continue;
+//                }
+//            }
+//            // 全部成功移动，删除记录
+//            recycleInfoMapper.delByUUID(uuid);
+//        }
+//        return delFailList;
+//    }
 }
