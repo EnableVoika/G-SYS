@@ -303,6 +303,13 @@
                         onclick="permanentSelectedFiles()">
                     <i class="fa fa-trash"></i> 删除选中
                 </button>
+                <button id="revert-selected-btn"
+                        type="button"
+                        class="btn btn-success btn-sm action-btn"
+                        style="display: none;"
+                        onclick="revertSelectedFiles()">
+                    <i class="fa fa-undo"></i> 还原选中
+                </button>
             </div>
 
             <!-- 文件列表 -->
@@ -458,10 +465,27 @@
         const selections = $('#bootstrap-table').bootstrapTable('getSelections');
         if (selections.length > 0) {
             $('#delete-selected-btn').show();
+            $('#revert-selected-btn').show();
         } else {
             $('#delete-selected-btn').hide();
+            $('#revert-selected-btn').hide();
         }
     }
+
+    /*
+     * 还原选中
+     */
+    function revertSelectedFiles()
+    {
+        const selections = $('#bootstrap-table').bootstrapTable('getSelections');
+        if (selections.length === 0) return;
+        $.modal.alertWarning_callback(`确认还原这 ${selections.length} 项吗？`, function ()
+        {
+            const groupUuids = selections.map(row => row.groupUuid);
+            revertRequest(groupUuids);
+        }, null);
+    }
+
 
     function permanentRequest(groupUuids)
     {
