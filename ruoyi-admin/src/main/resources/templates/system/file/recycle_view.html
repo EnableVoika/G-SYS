@@ -383,7 +383,7 @@
                 {
                     // console.log(row)
                     // 正常文件/文件夹
-                    const icon = iconMap[row.fileType] || iconMap[0];
+                    const icon = iconMap[row.relativeTopType] || iconMap[0];
                     return `
                         <div class="file-clickable">
                             <div class="file-icon">
@@ -413,7 +413,7 @@
                 }
             },
             {
-                field : 'topTypeLabel',
+                field : 'relativeTopTypeLabel',
                 title : '项目类型'
             },
             {

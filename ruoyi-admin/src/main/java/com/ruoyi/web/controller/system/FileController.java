@@ -243,22 +243,18 @@ public class FileController extends BaseController
     @ResponseBody
     public AjaxResult permanentDel(@RequestBody FileDTO _Dto)
     {
-        Set<String> uuids = new HashSet<>();
-        if (CollectionUtils.isNotEmpty(_Dto.getUuids()))
-        {
-            for (String uuid : _Dto.getUuids())
-            {
-                uuids.add(uuid);
-            }
-        }
+        Set<String> groupUUIDs = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(_Dto.getGroupUuids()))
+            groupUUIDs.addAll(_Dto.getGroupUuids());
         if (StringUtils.isNotEmpty(_Dto.getUuid()))
-            uuids.add(_Dto.getUuid());
-        if (CollectionUtils.isEmpty(uuids))
+            groupUUIDs.add(_Dto.getUuid());
+        if (CollectionUtils.isEmpty(groupUUIDs))
             throw new ServiceExcept("文件路径id不能为空");
-        List<DelFailFile> delFailFiles = fileService.permanentDels(uuids);
+        long userId = getUserId();
+        List<DelFailFile> delFailFiles = fileService.permanentDels(userId, groupUUIDs);
         if (CollectionUtils.isNotEmpty(delFailFiles))
         {
-            if (delFailFiles.size() == uuids.size())
+            if (delFailFiles.size() == groupUUIDs.size())
                 return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "文件删除失败", delFailFiles);
             return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件删除失败", delFailFiles);
         }

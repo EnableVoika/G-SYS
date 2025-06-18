@@ -25,7 +25,7 @@ public interface FileService
 
     List<RecycleVO> recycleList(RecycleListDTO _Dto);
 
-    List<DelFailFile> permanentDels(Set<String> _UUIDs);
+    List<DelFailFile> permanentDels(long _UserId, Set<String> _GroupUUIDs);
 
     List<DelFailFile> reverts(Set<String> _UUIDs);
 }

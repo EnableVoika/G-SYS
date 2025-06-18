@@ -348,6 +348,62 @@ public class FileServiceImpl implements FileService
         }
     }
 
+    /**
+     * 递归清理 rootDir 及其所有子目录下的空目录。
+     * 如遇有文件，记录日志并跳过。
+     * @param rootDir 待清理的目录
+     * @return 返回未能删除的目录（目录下有文件）
+     */
+    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, Path rootDir) throws IOException {
+        List<Path> undeletedDirs = new ArrayList<>();
+        cleanEmptyDirsInternal(_DelFailList, rootDir, undeletedDirs);
+        return undeletedDirs;
+    }
+
+    public static List<Path> cleanEmptyDirs(List<DelFailFile> _DelFailList, String _Root, String relative) throws IOException {
+        Path fullPath = Path.of(_Root, relative);
+        List<Path> undeletedDirs = new ArrayList<>();
+        cleanEmptyDirsInternal(_DelFailList, fullPath, undeletedDirs);
+        return undeletedDirs;
+    }
+
+    // 内部递归函数
+    private static boolean cleanEmptyDirsInternal(List<DelFailFile> _DelFailList, Path dir, List<Path> undeletedDirs) throws IOException {
+        if (!Files.isDirectory(dir))
+            return false;
+        boolean canDelete = true;
+
+        // 检查子目录和文件
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path child : stream) {
+                if (Files.isDirectory(child)) {
+                    boolean subDirCanDelete = cleanEmptyDirsInternal(_DelFailList, child, undeletedDirs);
+                    if (!subDirCanDelete) canDelete = false;
+                } else {
+                    // 有文件就不能删
+                    canDelete = false;
+                }
+            }
+        }
+
+        if (canDelete) {
+            try {
+                Files.delete(dir);
+                // System.out.println("删除空目录：" + dir);
+            } catch (IOException e) {
+                undeletedDirs.add(dir);
+                // System.err.println("无法删除空目录 " + dir + "，异常：" + e.getMessage());
+                return false;
+            }
+            return true;
+        } else {
+            undeletedDirs.add(dir); // 目录下还有文件
+            // System.err.println("目录下还有文件，不能删除: " + dir);
+            _DelFailList.add(new DelFailFile(dir.toString(), "还有文件，可能之前移动失败，因此该路径无法删除"));
+            return false;
+        }
+    }
+
 
     private void _recycle(List<DelFailFile> _DelFailList, long _UserId, String _UserHome, String _Group_OriginalRelativePath, String _DeletedAt) throws IOException {
         // 获取每一条源文件路径下面的所有叶子路径
@@ -447,7 +503,6 @@ public class FileServiceImpl implements FileService
                     Files.createDirectories(recycleFullPath.getParent());
                     // 确保父目录存在, 再移动文件到回收站
                     Files.move(originalFullPath, recycleFullPath);
-                    Files.delete(originalFullPath);
                 }
                 catch (AccessDeniedException e)
                 {
@@ -465,6 +520,8 @@ public class FileServiceImpl implements FileService
                 }
                 recycleInfoMapper.insert(recycleInfo);
             }
+            // 清空空目录
+            cleanEmptyDirs(_DelFailList, topPath);
         }
         catch(Exception e)
         {
@@ -526,73 +583,114 @@ public class FileServiceImpl implements FileService
         return data;
     }
 
-    public List<DelFailFile> permanentDels(Set<String> _UUIDs)
+    /**
+     * 永久删除
+     * @param _GroupUUIDs
+     * @return
+     */
+    public List<DelFailFile> permanentDels(long _UserId, Set<String> _GroupUUIDs)
     {
         List<DelFailFile> delFailList = new ArrayList<>();
-        Long userId = ShiroUtils.getUserId();
-        for (String uuid : _UUIDs)
+        RecycleInfoCondition condition = new RecycleInfoCondition();
+        condition.setUserId(_UserId);
+        Path userRecycleSpace = getUserRecycleSpace(_UserId);
+        for (String groupUUID : _GroupUUIDs)
         {
-            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
-            if (null == recycleInfo)
+            condition.setGroupUuid(groupUUID);
+            // 查出这个userid下的所有属于这个group uuid的子路径
+            List<RecycleInfo> searchResult = recycleInfoMapper.search(condition);
+            if (CollectionUtils.isEmpty(searchResult))
             {
-                // 记录失败的uuid
-                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
-                delFailList.add(delFailFile);
+                delFailList.add(new DelFailFile(groupUUID, "回收站里不存在这个id的目录"));
                 continue;
             }
-            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
-                throw new ServiceExcept("你无权删除其他人的文件");
-            AtomicBoolean success = new AtomicBoolean(true);
-            try
-            {
-                Path userRecycleSpacePath = Path.of(recycleFolderRootPath, String.valueOf(userId));
-                Path recycleFileFullPath = Path.of(userRecycleSpacePath.toString(), uuid);
-                // 递归删除目录及所有内容
-                try (Stream<Path> stream = Files.walk(recycleFileFullPath))
-                {
-                    stream.sorted(Comparator.reverseOrder()).forEach(path ->
-                    {
-                        try
-                        {
-                            Files.delete(path);
-                        } catch (IOException e)
-                        {
-                            success.set(false);
-                            log.error("uuid={}, 路径={} 删除失败, 失败原因: ", uuid, path, e);
-                            DelFailFile delFailFile = new DelFailFile(uuid, path + "删除失败, 失败原因: " + e.getMessage());
-                            delFailList.add(delFailFile);
-                        }
-                    });
-                }
-            }
-            catch (NoSuchFileException e)
-            {
-                log.error("{} 删除失败, 失败原因: {}", uuid, "没有找到该uuid对应的路径", e);
-                DelFailFile delFailFile = new DelFailFile(uuid, "没有找到该文件, 该文件不在回收站或者路径错误");
-                delFailList.add(delFailFile);
-                continue;
-            }
-            catch (Exception e)
-            {
-                log.error("{} 删除失败, 失败原因: ", uuid, e);
-                DelFailFile delFailFile = new DelFailFile(uuid, e.getMessage());
-                delFailList.add(delFailFile);
-                continue;
-            }
-            if (success.get())
+            // 逐一删除文件和数据库记录
+            for (RecycleInfo recycleInfo : searchResult)
             {
                 try
                 {
-                    recycleInfoMapper.delByUUID(uuid);
-                } catch (Exception e)
+                    Files.deleteIfExists(Path.of(userRecycleSpace.toString(), recycleInfo.getRecycleRelativePath()));
+                    // 删除成功没有抛异常，就把数据库记录删除掉
+                    recycleInfoMapper.delByUUID(recycleInfo.getUuid());
+                }
+                catch (IOException e)
                 {
-                    log.error("{} 数据库记录删除失败, 失败原因: ", uuid, e);
-                    delFailList.add(new DelFailFile(uuid, "数据库记录删除失败: " + e.getMessage()));
+                    delFailList.add(new DelFailFile(recycleInfo.getOriginalRelativePath(), "删除失败"));
                 }
             }
+            // 清空空目录
+            cleanEmptyDirs();
         }
         return delFailList;
     }
+
+//    public List<DelFailFile> permanentDels(Set<String> _UUIDs)
+//    {
+//        List<DelFailFile> delFailList = new ArrayList<>();
+//        Long userId = ShiroUtils.getUserId();
+//        for (String uuid : _UUIDs)
+//        {
+//            RecycleInfo recycleInfo = recycleInfoMapper.findByUUID(uuid);
+//            if (null == recycleInfo)
+//            {
+//                // 记录失败的uuid
+//                DelFailFile delFailFile = new DelFailFile(uuid, "不存在");
+//                delFailList.add(delFailFile);
+//                continue;
+//            }
+//            if (!userId.equals(Constants.ADMIN_USER_ID) && !userId.equals(recycleInfo.getUserId()))
+//                throw new ServiceExcept("你无权删除其他人的文件");
+//            AtomicBoolean success = new AtomicBoolean(true);
+//            try
+//            {
+//                Path userRecycleSpacePath = Path.of(recycleFolderRootPath, String.valueOf(userId));
+//                Path recycleFileFullPath = Path.of(userRecycleSpacePath.toString(), uuid);
+//                // 递归删除目录及所有内容
+//                try (Stream<Path> stream = Files.walk(recycleFileFullPath))
+//                {
+//                    stream.sorted(Comparator.reverseOrder()).forEach(path ->
+//                    {
+//                        try
+//                        {
+//                            Files.delete(path);
+//                        } catch (IOException e)
+//                        {
+//                            success.set(false);
+//                            log.error("uuid={}, 路径={} 删除失败, 失败原因: ", uuid, path, e);
+//                            DelFailFile delFailFile = new DelFailFile(uuid, path + "删除失败, 失败原因: " + e.getMessage());
+//                            delFailList.add(delFailFile);
+//                        }
+//                    });
+//                }
+//            }
+//            catch (NoSuchFileException e)
+//            {
+//                log.error("{} 删除失败, 失败原因: {}", uuid, "没有找到该uuid对应的路径", e);
+//                DelFailFile delFailFile = new DelFailFile(uuid, "没有找到该文件, 该文件不在回收站或者路径错误");
+//                delFailList.add(delFailFile);
+//                continue;
+//            }
+//            catch (Exception e)
+//            {
+//                log.error("{} 删除失败, 失败原因: ", uuid, e);
+//                DelFailFile delFailFile = new DelFailFile(uuid, e.getMessage());
+//                delFailList.add(delFailFile);
+//                continue;
+//            }
+//            if (success.get())
+//            {
+//                try
+//                {
+//                    recycleInfoMapper.delByUUID(uuid);
+//                } catch (Exception e)
+//                {
+//                    log.error("{} 数据库记录删除失败, 失败原因: ", uuid, e);
+//                    delFailList.add(new DelFailFile(uuid, "数据库记录删除失败: " + e.getMessage()));
+//                }
+//            }
+//        }
+//        return delFailList;
+//    }
 
     /**
      * 还原
