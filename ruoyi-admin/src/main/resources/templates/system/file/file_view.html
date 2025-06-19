@@ -507,7 +507,7 @@
                             </ul>
                         </div>
                         <!-- 普通按钮 -->
-                        <button type="button" class="btn btn-default btn-sm action-btn btn-green-hover" onclick="uploadFile()">
+                        <button type="button" class="btn btn-default btn-sm action-btn btn-green-hover" onclick="simple_upload()">
                             <i class="fa fa-upload"></i> 上传
                         </button>
                         <button type="button" class="btn btn-default btn-sm action-btn btn-green-hover" onclick="downloadFile()">
@@ -543,6 +543,7 @@
             let pathStack = [
                 { name: '根目录', path: '' }
             ];
+
             const iconMap =
             {
                 0:  { icon: 'fa-file',           color: '#666' },        // 文件
@@ -581,7 +582,8 @@
                 33: { icon: 'fa-file-excel',     color: '#388e3c' },     // XLSX
                 34: { icon: 'fa-file-image',     color: '#607d8b' },     // SVG
                 35: { icon: 'fa-database',       color: '#9c27b0' },     // MDB
-                36: { icon: 'fa-file-text',     color: '#789262' }     // LOG
+                36: { icon: 'fa-file-text',      color: '#789262' },     // LOG
+                37: { icon: 'fa-database',       color: '#9c27b0' }      // SQL
             };
 
             $(function()
@@ -663,7 +665,7 @@
                             var actions = [];
                             actions.push('<a class="btn btn-primary btn-xs" href="javascript:;"><i class="fa fa-edit"></i>重命名</a> ');
                             actions.push('<a class="btn btn-success btn-xs" href="javascript:;" onclick="downloadFile(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-download"></i>下载</a> ');
-                            actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="recycleSingle(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-remove"></i>删除</a>');
+                            actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="recycleSingle(\'' + encodeURIComponent(row.relativePath) + '\', \'' + encodeURIComponent(row.name) + '\')"><i class="fa fa-remove"></i>删除</a>');
                             return actions.join('');
                         }
                     }]
@@ -1260,11 +1262,12 @@ document.addEventListener('click', function(e)
             });
         }
 
-        function recycleSingle(relativePath)
+        function recycleSingle(relativePath, name)
         {
             if (null === relativePath || relativePath === '') return;
             let path = decodeURIComponent(relativePath);
-            $.modal.confirm(`确认删除 ${path} 吗？`, function ()
+            name = decodeURIComponent(name);
+            $.modal.confirm(`确认删除 ${name} 吗？`, function ()
             {
                 $.modal.loading('正在删除...');
                 recycleRequest([path]);
@@ -1412,6 +1415,43 @@ function downloadRequest(path)
 function downloadFile(relativePath)
 {
     downloadRequest(relativePath);
+}
+
+function simple_upload()
+{
+    var btn = ['<i class="fa fa-check"></i> 点我回调', '<i class="fa fa-close"></i> 点我关闭'];
+    var options =
+    {
+        title: '上传',
+        width: "900",
+        height: "320",
+        url: prefix + "/upload",
+        btn: btn,
+        callBack: simple_upload_callback,
+        shadeClose: false
+    };
+    // $.modal.openOptions(options);
+
+    // 获取当前路径
+    let currentPath = pathStack[pathStack.length - 1].path || '';
+    // encodeURIComponent 避免路径有特殊字符
+    let url = prefix + "/upload?path=" + encodeURIComponent(currentPath);
+    $.modal.open('上传', url, null, null, simple_upload_callback, simple_upload_callback2, false);
+}
+
+
+function simple_upload_callback(index, layero)
+{
+    $.modal.close(index);
+    const last = pathStack[pathStack.length - 1];
+    get_list(last.path);
+}
+
+function simple_upload_callback2(index, layero)
+{
+    $.modal.close(index);
+    const last = pathStack[pathStack.length - 1];
+    get_list(last.path);
 }
         </script>
         <!-- 在你的<body>里，breadcrumb-bar和bootstrap-table之间加这个弹窗容器 -->

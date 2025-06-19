@@ -210,6 +210,7 @@ public class FileTypeUtils
         put("SVG", new FileTypeInfo(34, "SVG图像"));
         put("MDB", new FileTypeInfo(35, "Access数据库"));
         put("LOG", new FileTypeInfo(36, "日志文件"));
+        put("SQL", new FileTypeInfo(37, "SQL文件"));
     }};
 
     private static final Map<Integer, String> indexToFileTypeLabelMap = new HashMap<>();

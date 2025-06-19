@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,14 +32,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 @Controller
 @RequestMapping("/system/file")
@@ -344,15 +345,33 @@ public class FileController extends BaseController
                 .body(resource);
     }
 
-    @PostMapping("/upload")
     @RequiresPermissions("system:file:upload")
+    @PostMapping("/upload")
     @ResponseBody
-    public AjaxResult simple_upload(@RequestBody FileDTO dto, MultipartFile multipartFile)
-    {
-        if (StringUtils.isEmpty(dto.getPath()))
-            return AjaxResult.fail("必须指定上传位置");
+    public AjaxResult simple_upload(@RequestParam("path") String path, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        if (StringUtils.isNotEmpty(path))
+            path = (path.startsWith("/") || path.startsWith("\\")) ? path : ( "/" + path);
+        long userId = getUserId();
+        String userHome = fileService.getUserHome(userId);
+        String decodePath = URLDecoder.decode(path, StandardCharsets.UTF_8);
+        decodePath = check_access_path(userHome, decodePath, true);
+        // 保存位置
+        Path savePath = Path.of(userHome, decodePath, Objects.requireNonNull(multipartFile.getOriginalFilename()));
+        try (InputStream is = multipartFile.getInputStream())
+        {
+            Files.copy(is, savePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return AjaxResult.ok("上传成功");
+    }
 
-        return AjaxResult.ok();
+    @RequiresPermissions("system:file:upload")
+    @GetMapping("/upload")
+    public String simple_upload_view(@RequestParam("path") String path, Model model) {
+        if (StringUtils.isNotEmpty(path))
+            path = (path.startsWith("/") || path.startsWith("\\")) ? path : ( "/" + path);
+        String encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        model.addAttribute("path", encodedPath);
+        return prefix + "/upload";
     }
 
 

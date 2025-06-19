@@ -210,6 +210,7 @@ public class FileServiceImpl implements FileService
             else if(Files.isRegularFile(topPath))
             {
                 topType = FileTypeUtils.getFileTypeIndex(FileTypeUtils.getFileType(topPath.toString()));
+                topType = topType == -1 ? FileTypeUtils.getFileTypeIndex("FILE") : topType;
                 topTypeLabel = FileTypeUtils.getFileTypeIndexLabel(topType);
             }
 
