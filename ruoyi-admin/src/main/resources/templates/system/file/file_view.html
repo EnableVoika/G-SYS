@@ -1234,11 +1234,16 @@ document.addEventListener('click', function(e)
                     {
                         $.modal.alertError(res.msg || "删除失败");
                     }
-
                 },
                 error: function () {
                     $.modal.alertError("网络异常");
                 }
+            })
+            .always(function(dataOrXhr, textStatus, xhrOrError)
+            {
+                // 任何情况下都会执行
+                // 关闭遮罩层
+                $.modal.closeLoading();
             });
         }
 
@@ -1249,6 +1254,7 @@ document.addEventListener('click', function(e)
             $.modal.confirm(`确认删除这 ${selections.length} 项吗？`, function ()
             {
                 const paths = selections.map(row => row.relativePath);
+                $.modal.loading('正在删除...');
                 recycleRequest(paths);
             });
         }
@@ -1259,6 +1265,7 @@ document.addEventListener('click', function(e)
             let path = decodeURIComponent(relativePath);
             $.modal.confirm(`确认删除 ${path} 吗？`, function ()
             {
+                $.modal.loading('正在删除...');
                 recycleRequest([path]);
             });
         }

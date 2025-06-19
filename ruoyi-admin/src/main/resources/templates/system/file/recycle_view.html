@@ -384,6 +384,7 @@
         $.modal.alertWarning_callback(`确认还原这 ${selections.length} 项吗？`, function ()
         {
             const groupUuids = selections.map(row => row.groupUuid);
+            $.modal.loading('正在还原...');
             revertRequest(groupUuids);
         }, null);
     }
@@ -431,7 +432,13 @@
             error: function () {
                 $.modal.alertError("网络异常");
             }
-        });
+        })
+        .always(function(dataOrXhr, textStatus, xhrOrError)
+        {
+            // 任何情况下都会执行
+            // 关闭遮罩层
+            $.modal.closeLoading();
+        });;
     }
 
     function revertRequest(groupUuids)
@@ -476,6 +483,12 @@
             error: function () {
                 $.modal.alertError("网络异常");
             }
+        })
+        .always(function(dataOrXhr, textStatus, xhrOrError)
+        {
+            // 任何情况下都会执行
+            // 关闭遮罩层
+            $.modal.closeLoading();
         });
     }
 
@@ -486,6 +499,7 @@
         originalFileName = decodeURIComponent(originalFileName);
         $.modal.alertWarning_callback(`确认恢复 ${originalFileName} 吗？`, function ()
         {
+            $.modal.loading('正在还原...');
             revertRequest([groupUuid]);
         }, null);
     }
@@ -497,6 +511,7 @@
         $.modal.alertWarning_callback(`确认删除这 ${selections.length} 项吗？这将永久删除，无法恢复！`, function ()
         {
             const groupUuids = selections.map(row => row.groupUuid);
+            $.modal.loading('正在删除...');
             permanentRequest(groupUuids);
         }, null);
     }
@@ -508,6 +523,7 @@
         originalFileName = decodeURIComponent(originalFileName);
         $.modal.alertWarning_callback(`确认删除 ${originalFileName} 吗？这将永久删除，无法恢复！`, function ()
         {
+            $.modal.loading('正在删除...');
             permanentRequest([groupUuid]);
         }, null);
     }
