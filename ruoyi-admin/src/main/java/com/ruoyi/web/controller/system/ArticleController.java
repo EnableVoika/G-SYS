@@ -40,6 +40,7 @@ public class ArticleController extends BaseController {
     /**
      * 查询全文索引数据
      */
+    @RequiresPermissions("system:article:view")
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo textList(Article condition)
