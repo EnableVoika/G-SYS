@@ -17,12 +17,24 @@ import com.ruoyi.system.service.FileService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -287,6 +299,60 @@ public class FileController extends BaseController
             return AjaxResult.fail(ErrorCode.NOT_COMPLETELY_DELETED, "部分文件还原失败", delFailFiles);
         }
         return AjaxResult.ok("还原成功");
+    }
+
+    @RequiresPermissions("system:file:download")
+    @GetMapping("/download")
+    public ResponseEntity<?> simple_download(@RequestParam("path") String _Path, HttpServletRequest _Request) throws IOException {
+        long userId = getUserId();
+        String userHome = fileService.getUserHome(userId);
+        Path resourceFullPath = Path.of(userHome, _Path);
+
+        // 文件不存在
+        if (!Files.exists(resourceFullPath)) {
+            return ResponseEntity
+                    .status(200)
+                    .header("code", String.valueOf(ErrorCode.FILE_NOT_EXISTS.code()))
+                    .header("msg", ErrorCode.FILE_NOT_EXISTS.what())
+                    .body("文件不存在");
+        }
+        // 不是常规文件
+        if (!Files.isRegularFile(resourceFullPath)) {
+            return ResponseEntity
+                    .status(200)
+                    .header("code", String.valueOf(ErrorCode.NOT_A_REGULAR_FILE.code()))
+                    .header("msg", ErrorCode.NOT_A_REGULAR_FILE.what())
+                    .body("不是普通文件");
+        }
+        // 权限校验
+        check_access_path(userHome, _Path, true);
+
+        long size = Files.size(resourceFullPath);
+
+        // 文件名编码
+        String rawName = resourceFullPath.getFileName().toString();
+        String encodeFileName = URLEncoder.encode(rawName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        String contentDisposition = "attachment; filename*=UTF-8''" + encodeFileName;
+
+        InputStreamResource resource = new InputStreamResource(Files.newInputStream(resourceFullPath));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .header("code", "0")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(size)
+                .body(resource);
+    }
+
+    @PostMapping("/upload")
+    @RequiresPermissions("system:file:upload")
+    @ResponseBody
+    public AjaxResult simple_upload(@RequestBody FileDTO dto, MultipartFile multipartFile)
+    {
+        if (StringUtils.isEmpty(dto.getPath()))
+            return AjaxResult.fail("必须指定上传位置");
+
+        return AjaxResult.ok();
     }
 
 

@@ -20,7 +20,8 @@ public enum ErrorCode
     FILE_OFFSET_MORE_THAN_FILE_SIZE_ERR(510, "File Offset Exceeds File Size"),
     NOT_A_DIR(511, "Is not a directory"),
     FILE_OR_DIR_HAS_EXISTS(512, "file or directory has exists"),
-    NOT_COMPLETELY_DELETED(513, "Not completely deleted");
+    NOT_COMPLETELY_DELETED(513, "Not completely deleted"),
+    NOT_A_REGULAR_FILE(514, "Is not a regular file");
     private final int code;
     private final String msg;
 

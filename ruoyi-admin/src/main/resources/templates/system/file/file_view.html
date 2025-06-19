@@ -452,10 +452,10 @@
 }
 
         </style>
-        <link href="/css/all.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <script src="/js/jquery.min.js"></script>
-        <script src="/js/bootstrap.min.js"></script>
+<!--        <link href="/css/all.min.css" rel="stylesheet">-->
+<!--        <link rel="stylesheet" href="/css/bootstrap.min.css">-->
+<!--        <script src="/js/jquery.min.js"></script>-->
+<!--        <script src="/js/bootstrap.min.js"></script>-->
     </head>
     <body class="gray-bg">
         <div class="container-div">
@@ -552,13 +552,13 @@
                 4:  { icon: 'fa-file-image',     color: '#28c76f' },     // GIF
                 5:  { icon: 'fa-file-image',     color: '#00bcd4' },     // PNG
                 6:  { icon: 'fa-file-image',     color: '#bca8d8' },     // BMP
-                7:  { icon: 'fa-file-archive',   color: '#ff7043' },     // ZIP
-                8:  { icon: 'fa-file-archive',   color: '#bf360c' },     // RAR
-                9:  { icon: 'fa-file-archive',   color: '#8d6e63' },     // 7Z
-                10: { icon: 'fa-file-archive',   color: '#a1887f' },     // GZ
-                11: { icon: 'fa-file-lines',     color: '#90caf9' },     // TXT
-                12: { icon: 'fa-file-lines',     color: '#455a64' },     // YML
-                13: { icon: 'fa-file-lines',     color: '#455a64' },     // YAML（YML样式）
+                7:  { icon: 'fa-file-zip-o',   color: '#ff7043' },     // ZIP
+                8:  { icon: 'fa-file-zip-o',   color: '#bf360c' },     // RAR
+                9:  { icon: 'fa-file-zip-o',   color: '#8d6e63' },     // 7Z
+                10: { icon: 'fa-file-zip-o',   color: '#a1887f' },     // GZ
+                11: { icon: 'fa-file-text',     color: '#90caf9' },     // TXT
+                12: { icon: 'fa-file-text',     color: '#455a64' },     // YML
+                13: { icon: 'fa-file-text',     color: '#455a64' },     // YAML（YML样式）
                 14: { icon: 'fa-file-word',      color: '#1976d2' },     // DOC
                 15: { icon: 'fa-file-word',      color: '#1565c0' },     // DOCX
                 16: { icon: 'fa-file-pdf',       color: '#e53935' },     // PDF
@@ -568,7 +568,7 @@
                 20: { icon: 'fa-file-audio',     color: '#00acc1' },     // WAV
                 21: { icon: 'fa-file-audio',     color: '#00bfae' },     // FLAC
                 22: { icon: 'fa-file-audio',     color: '#ffd600' },     // OGG
-                23: { icon: 'fa-file-alt',       color: '#43a047' },     // EXE
+                23: { icon: 'fa-file',       color: '#43a047' },     // EXE
                 24: { icon: 'fa-file-code',      color: '#bdbdbd' },     // BAT
                 25: { icon: 'fa-apple',          color: '#616161' },     // IPA
                 26: { icon: 'fa-android',        color: '#a4c639' },     // APK
@@ -581,7 +581,7 @@
                 33: { icon: 'fa-file-excel',     color: '#388e3c' },     // XLSX
                 34: { icon: 'fa-file-image',     color: '#607d8b' },     // SVG
                 35: { icon: 'fa-database',       color: '#9c27b0' },     // MDB
-                36: { icon: 'fa-file-lines',     color: '#789262' }      // LOG
+                36: { icon: 'fa-file-text',     color: '#789262' }     // LOG
             };
 
             $(function()
@@ -661,7 +661,8 @@
                         align: 'center',
                         formatter: function(value, row, index) {
                             var actions = [];
-                            actions.push('<a class="btn btn-success btn-xs" href="javascript:;"><i class="fa fa-edit"></i>重命名</a> ');
+                            actions.push('<a class="btn btn-primary btn-xs" href="javascript:;"><i class="fa fa-edit"></i>重命名</a> ');
+                            actions.push('<a class="btn btn-success btn-xs" href="javascript:;" onclick="downloadFile(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-download"></i>下载</a> ');
                             actions.push('<a class="btn btn-danger btn-xs" href="javascript:;" onclick="recycleSingle(\'' + encodeURIComponent(row.relativePath) + '\')"><i class="fa fa-remove"></i>删除</a>');
                             return actions.join('');
                         }
@@ -1342,6 +1343,76 @@ document.addEventListener('click', function(e)
                 closeBreadcrumbEllipsisMenu();
             }
         }
+
+function downloadRequest(path)
+{
+    // 先用HEAD探测
+    $.ajax({
+        url: prefix + "/download?path=" + path,
+        type: "HEAD",
+        success: function(data, status, xhr)
+        {
+            let code = xhr.getResponseHeader('code');
+            if(code === '514')
+            {
+                $.modal.alertError("不是一个标准文件");
+                return;
+            }
+            if(code === '506')
+            {
+                $.modal.alertError("文件不存在");
+                return;
+            }
+            if (code !== '0')
+            {
+                let msg = xhr.getResponseHeader('msg');
+                $.modal.alertError(msg);
+                return;
+            }
+
+            // 可以下载，开始GET拉取
+            $.ajax({
+                url: prefix + "/download?path=" + path,
+                type: "GET",
+                xhrFields: { responseType: 'blob' },
+                success: function(data, status, xhr)
+                {
+                    // 取文件名
+                    let disposition = xhr.getResponseHeader('content-disposition');
+                    let fileName = "download.file";
+                    if (disposition && disposition.indexOf("filename*=UTF-8''") !== -1)
+                        fileName = decodeURIComponent(disposition.split("filename*=UTF-8''")[1]);
+                    else if (disposition && disposition.indexOf('filename=') !== -1)
+                        fileName = disposition.split('filename=')[1].replace(/"/g, '');
+
+                    // Blob下载
+                    let blob = new Blob([data]);
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                },
+                error: function(xhr, status, error)
+                {
+                    $.modal.alertError('下载失败: ' + error);
+                }
+            });
+        },
+        error: function(xhr, status, error)
+        {
+            $.modal.alertError('下载失败: ' + error);
+        }
+    });
+}
+
+function downloadFile(relativePath)
+{
+    downloadRequest(relativePath);
+}
         </script>
         <!-- 在你的<body>里，breadcrumb-bar和bootstrap-table之间加这个弹窗容器 -->
         <div id="breadcrumb-ellipsis-popup-mask" style="display:none;"></div>
