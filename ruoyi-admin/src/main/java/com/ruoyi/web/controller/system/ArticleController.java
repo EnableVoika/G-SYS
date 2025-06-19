@@ -25,7 +25,7 @@ public class ArticleController extends BaseController {
     @Resource
     private LifeAndLeisureServices services;
 
-    private String prefix = "system/article";
+    private final String prefix = "system/article";
 
     /**
      * 获取文章资讯

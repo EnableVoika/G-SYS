@@ -42,7 +42,7 @@ public class FileController extends BaseController
     @Value("${ruoyi.custom-folder}")
     private String customFolderConfig;
 
-    private String prefix = "system/file";
+    private final String prefix = "system/file";
 
     /**
      *
